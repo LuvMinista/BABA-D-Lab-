@@ -1,0 +1,12 @@
+Protocol: Diffie-Hellman Key Exchange
+
+Alice -> Bob : g^a mod p
+Bob -> Alice : g^b mod p
+
+Shared Secret: g^(ab) mod p
+
+Where:
+  g   = Generator (public)
+  p   = Large prime (public)
+  a   = Alice's private exponent (secret)
+  b   = Bob's private exponent (secret)
