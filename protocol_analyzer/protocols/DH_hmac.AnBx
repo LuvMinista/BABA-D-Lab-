@@ -1,0 +1,21 @@
+Protocol: DH_hmac AnB
+
+Types:
+	Agent A,B;
+	Number Msg,XxX,YxY,g;
+	Function [Agent -> PublicKey] pk;
+	Function [Untyped,SymmetricKey -> Number] hmac
+
+Knowledge:
+	A: A,B,pk,g,inv(pk(A)),hmac;
+	B: A,B,pk,g,inv(pk(B)),hmac
+
+Actions:
+	A -> B: {A,exp(g,XxX)}pk(B)
+	B -> A: {exp(g,YxY),B}pk(A)
+	A -> B: {|Msg|}exp(exp(g,XxX),YxY)
+	B -> A: hmac((Msg,A),exp(exp(g,YxY),XxX))	
+
+Goals:
+	Msg secret between A,B
+	B authenticates A on Msg

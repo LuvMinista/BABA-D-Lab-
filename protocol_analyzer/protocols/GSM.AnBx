@@ -1,0 +1,27 @@
+Protocol: GSM AnB
+
+# Redl, S., Oliphant, M.W., Weber, M.K., Weber, M.K.
+# An introduction to GSM. Artech House, Inc. (1995)
+
+Types:
+	Agent H,M,B;
+	Number NB,Msg;
+	Function [Agent,Agent ->* Number] ki;
+	Function [Number,Number -> SymmetricKey] kc;
+	Function [Untyped -> Hash] hash;
+
+Knowledge:
+	M: M,B,H,ki(M,H),kc,hash;
+	B: B,M,hash;
+	H: B,H,M,ki(M,H),kc,hash
+
+Actions:
+	H -> B: NB, hash(NB,ki(M,H)),kc(NB,ki(M,H))
+	B -> M: NB
+	M -> B: hash(NB,ki(M,H))
+	B -> M: {|Msg|}kc(NB,ki(M,H))
+
+Goals:
+	B authenticates M on NB
+	Msg secret between B,M
+	B ->* M: Msg

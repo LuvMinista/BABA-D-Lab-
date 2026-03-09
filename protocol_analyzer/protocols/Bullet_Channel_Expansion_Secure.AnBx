@@ -1,0 +1,21 @@
+Protocol: Bullet_Channel_Expansion_Secure AnBx
+
+Types:
+	Agent A,B;
+	Number Msg;
+	Certified A,B
+
+Knowledge:
+	A: A,B;
+	B: B,A
+
+Actions:
+    A *->* B: Msg
+
+Goals:
+	# A *->* B: Msg					# fail 2 sessions
+	# B authenticates A on Msg		# fail 2 sessions
+	
+	B weakly authenticates A on Msg
+	Msg secret between A,B
+	

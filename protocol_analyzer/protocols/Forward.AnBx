@@ -1,0 +1,18 @@
+Protocol: Forward			
+
+Types: 
+	Agent A,B,C;
+	Certified A,B,C;
+	Number Msg
+	
+Knowledge: 
+	A: A,B,C;
+	B: A,B,C;
+	C: A,B,C
+	
+Actions:
+	A -> B,(A|B,C|B): Msg
+	B -> C,^(A|B,C|-): Msg
+	
+Goals:
+	A ->* C: Msg

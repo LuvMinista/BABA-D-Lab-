@@ -1,0 +1,19 @@
+Protocol: Fresh_PublicKey AnB
+
+Types: 
+	Agent A,B;
+	PublicKey PKA;
+	Number Msg
+
+Knowledge: 
+	A: A,B;
+	B: B
+	
+Actions:
+	A -> B: PKA
+	B -> A: {Msg}PKA
+	
+Goals:
+	B ->* A: Msg
+    
+	

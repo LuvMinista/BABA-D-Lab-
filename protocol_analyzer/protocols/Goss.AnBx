@@ -1,0 +1,23 @@
+Protocol: Goss AnB
+
+# Goss - Cryptographic method and apparatus for public key exchange with authentication
+# US patent no. 4,956,863 (1990)
+
+Types:
+	Agent A,B;
+	Number RA,RB,tag1,tag2;
+	Function [Agent -> PublicKey] pk
+
+Knowledge:
+	A: A,B,pk(B),pk(A),inv(pk(A)),tag1,tag2;
+	B: B,A,pk(A),pk(B),inv(pk(B)),tag1,tag2
+
+Actions:
+	A -> B: A,{RA,tag1}pk(B)
+	B -> A: B,{RB,tag2}pk(A)
+
+Goals:
+	RA secret between A,B
+	RB secret between A,B
+	A ->* B: RA
+	B ->* A: RB

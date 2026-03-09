@@ -1,0 +1,20 @@
+Protocol: DH
+
+Types:
+	Agent A,B;
+	Certified A,B;
+	Number Msg,XxX,YxY,g;
+
+Knowledge:
+	A: A,B,g;
+	B: A,B,g;
+
+Actions:
+	A -> B,(A|B|-): exp(g,XxX)
+	B -> A,(B|A|-): exp(g,YxY)
+	A -> B: {|Msg|}exp(exp(g,YxY),XxX)
+
+Goals:
+	B authenticates A on Msg
+	Msg secret between A,B
+	

@@ -1,0 +1,18 @@
+Protocol: Forward_Blind_A_Digest
+
+Types: 
+	Agent A,B,C;
+	Certified A,C;
+	Number Msg
+	
+Knowledge: 
+	A: A,B,C;
+	B: A,B,C;
+	C: A,B,C
+	
+Actions:
+	A -> B,@(A|C|C): [Msg,[[Msg:C]]]
+	B -> C,^@(A|C|C): [Msg,[[Msg:C]]]
+	
+Goals:
+	A ->* C: [Msg,[[Msg:C]]]

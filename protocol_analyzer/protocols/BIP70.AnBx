@@ -1,0 +1,74 @@
+Protocol: BIP70 AnB
+
+
+Types:
+
+    Agent C1,C2,M;
+    Number paynow,BTC,BTC1,BTC2,t1,t2,MM,UM,ZM,MM1,RC1,RC2;
+    PublicKey BAM,BC1,BC2;
+    Function [Agent -> PublicKey] sk;
+    Function [Number,Number -> Number] tr;
+    Function [Untyped -> Number] hash
+
+Definitions:
+
+    OutC1: BTC1,hash(BC1);
+    OutC2: BTC2,hash(BC2);
+
+    TauC1: tr(OutC1);
+    TauC2: tr(OutC2);
+
+    PiC1 : {hash(TauC1)}inv(BC1),BC1;
+    PiC2 : {hash(TauC2)}inv(BC2),BC2;
+
+    Pi: PiC1,PiC2;
+
+    PaymentRequest:{hash(BAM),BTC,t1,t2,MM,UM,ZM}inv(sk(M));
+
+    RAC1: {M,RC1,BTC1,PaymentRequest}inv(BC1);
+    RAC2: {M,RC2,BTC2,PaymentRequest}inv(BC2);
+
+    TauC: Pi,(BTC,hash(BAM))
+
+Knowledge:
+
+    C2: C2,C1,sk,hash,tr;
+    C1: C1,M,C2,sk,hash,paynow,tr;
+    M: M,sk,inv(sk(M)),hash,paynow,t1,t2,tr
+
+Actions:
+
+    C1 -> C2: TauC1
+    C2 -> C1: TauC2
+
+    [C1] *->* M: paynow
+
+    M *->* [C1]: PaymentRequest
+
+    C1 *->* C2: RAC1,M,PaymentRequest,BC1
+    C2 *->* C1: RAC2,PiC2
+
+    [C1] *->* M: ZM,TauC,RAC1,RAC2
+
+    M *->* [C1]: {ZM,TauC,RAC1,RAC2,MM1}inv(sk(M))
+
+    [C1] *->* M: C1,C2
+
+
+    M -> C1: TauC
+
+    C1 -> M: BC1,BC2,TauC1,TauC2
+
+    M -> C1: BAM
+    C1 -> C2: BAM
+
+Goals:
+
+    M weakly authenticates C1 on RC1,BTC1
+    M weakly authenticates C2 on RC2,BTC2
+
+    RC1,RC2 secret between M,C1,C2
+
+    M weakly authenticates [C1] on RC1,BTC1,RC2,BTC2
+    M weakly authenticates [C1] on RC1,BTC1
+    M weakly authenticates [C1] on BC1

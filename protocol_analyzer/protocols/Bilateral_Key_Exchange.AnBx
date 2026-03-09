@@ -1,0 +1,21 @@
+Protocol: Bilateral_Key_Exchange AnB 
+
+Types:
+    Agent A,B;
+    Number NxNA,NxNB;
+    SymmetricKey KxK;
+    Function [Agent -> PublicKey] pk;
+    Function [Number -> Number] f
+
+Knowledge:
+    A: A,B,pk(A),pk(B),inv(pk(A)),f;
+    B: A,B,pk(A),pk(B),inv(pk(B)),pk,f
+
+Actions:
+    B->A: B,{NxNB,B}pk(A)
+    A->B: {f(NxNB),NxNA,A,KxK}pk(B)
+    B->A: {|f(NxNA)|}KxK
+
+Goals:
+    # A *->* B: KxK
+    B authenticates A on KxK

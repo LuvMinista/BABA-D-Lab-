@@ -1,0 +1,18 @@
+Protocol: Fresh_PublicKey_Sign AnB
+
+Types: 
+	Agent A,B;
+	PublicKey PKA;
+	Number Msg,empty
+
+Knowledge: 
+	A: A,B;
+	B: B,A,empty
+
+Actions:
+	A -> B: PKA
+	B -> A: empty
+	A -> B: {B,Msg}inv(PKA)
+	
+Goals:
+	B weakly authenticates A on Msg

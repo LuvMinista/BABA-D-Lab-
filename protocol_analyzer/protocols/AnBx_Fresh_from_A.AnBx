@@ -1,0 +1,16 @@
+Protocol: AnBx_Fresh_from_A
+
+Types:
+    Agent A,B;
+    Certified A;
+    Number Msg
+
+Knowledge:
+    A: A,B;
+    B: A,B
+
+Actions:
+    A -> B, @(A|B|-): Msg
+
+Goals:
+    B authenticates A on Msg

@@ -1,0 +1,18 @@
+Protocol: Hmac AnB
+
+Types:
+	Agent A,B;
+	Number Msg;
+	Function [Agent,Agent ->* HmacKey] shk;
+	Function [Untyped,HmacKey -> Hmac] hmac;
+
+Knowledge:
+	A: A,B,hmac;
+	B: B,A,hmac;
+	A,B share shk(A,B)
+
+Actions:
+	A -> B: hmac(Msg,shk(A,B)),Msg
+
+Goals:
+	A -> B: hmac(Msg,shk(A,B))

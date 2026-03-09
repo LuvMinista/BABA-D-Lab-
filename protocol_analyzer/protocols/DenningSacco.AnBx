@@ -1,0 +1,23 @@
+Protocol: DenningSacco AnB
+
+# inserted tag to avoid encryption/decryption attack
+# note this has a classical attack
+
+Types:
+	Agent A,B,s;
+	Number NA,Text1,Text2,Text3,Text4,tag;
+	Symmetric_key KAB;
+	Function [Agent -> PublicKey] pk,sk;
+
+Knowledge:
+	A: A,B,sk(A),inv(sk(A)),sk(s),tag;
+	B: B,sk(s),pk(B),inv(pk(B)),tag;
+	s: s,A,B,sk(A),pk(B),sk(s),inv(sk(s)),tag
+
+Actions:
+	A -> s: A,B
+	s -> A: {A,sk(A)}inv(sk(s)),{B,pk(B)}inv(sk(s))
+	A -> B: {A,sk(A)}inv(sk(s)),{B,pk(B)}inv(sk(s)),{{KAB,NA}inv(sk(A)),tag}pk(B)
+
+Goals:
+	A *->* B: KAB

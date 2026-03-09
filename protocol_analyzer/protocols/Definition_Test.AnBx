@@ -1,0 +1,35 @@
+Protocol: Definition_Test AnB
+
+Types:
+    Agent A,B;  
+    Number Msg;
+    Function [Agent,Number -> Number] fun1,fun2,fun3;
+	Function [Agent -> Number] fun4;
+	Function [Agent,Number -> Number] fun5;
+	Function [Agent -> PublicKey] pk
+
+Definitions:
+    
+    Def1: Msg; 	
+	Def2(Z): fun2(Z,Def1);
+	Def3(X,Y): fun3(X,Y);
+	Def4(X): fun4(X);
+	Def5(X,Y): fun5(Y,Def2(X));
+	Def6(ag): pk(ag)
+   
+Knowledge:
+    A: A,B,fun1,fun2,fun3,fun4,fun5,pk;
+    B: A,B,fun1,fun2,fun3,fun4,fun5,pk
+    
+Actions:
+   
+    A -> B: Def1
+	B -> A: Def2(A)
+	A -> B: Def3(A,Def1)
+	B -> A: Def4(B)
+	A -> B: Def5(A,B)
+	B -> A: (A,({Msg}Def6(B),Def1))
+	A -> B: fun5(A,Def2(A))
+   
+Goals:
+    A -> B: Def2(A)

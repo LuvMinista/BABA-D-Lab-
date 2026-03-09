@@ -1,0 +1,19 @@
+Protocol: AnBx_Fresh_from_A_with_DH AnB
+
+Types: 
+	Agent A,B;
+	Number Msg,NB,g,XxX,YxY;
+	Function [Agent -> PublicKey] pk,sk;
+	Function [Untyped -> Number] hash 
+
+Knowledge: 
+	A: A,B,pk,sk,inv(sk(A)),inv(pk(A)),hash,g;
+	B: A,B,pk,sk,hash,g
+	
+Actions:
+	A -> B: exp(g,XxX)
+	B -> A: {exp(g,YxY),NB,B}pk(A)
+	A -> B: {|NB,hash({B,Msg}inv(sk(A)))|}exp(exp(g,XxX),YxY),{B,Msg}inv(sk(A))
+	
+Goals:
+	B authenticates A on Msg

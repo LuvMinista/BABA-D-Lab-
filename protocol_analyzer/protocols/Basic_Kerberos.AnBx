@@ -1,0 +1,34 @@
+Protocol: Basic_Kerberos AnB # Bounded-verified
+
+Types: 
+	Agent C,ath,gw,s;
+    Number N1,N2,T1,T2,T3,Payload,tag;
+    Function hash;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+    SymmetricKey KCG,KCS
+
+Knowledge: 
+	C: C,ath,gw,s,hash,tag;
+	ath: ath,gw,hash,C,tag;
+	gw: ath,gw,s,hash,tag;
+	s: gw,s,hash,tag;
+    gw,s share shk(gw,s);
+    ath,gw share shk(ath,gw);
+    C,ath share shk(C,ath)
+
+Actions:
+	C -> ath: C,gw,N1
+	ath -> C: {|KCG,C,T1|}shk(ath,gw), 
+			{|KCG,N1,T1,gw|}shk(C,ath)
+	C -> gw: {|KCG,C,T1|}shk(ath,gw), 
+			{|C,T1|}KCG,
+			s,N2
+	gw -> C: {|KCS,C,T2|}shk(gw,s),
+			{|KCS,N2,T2,s|}KCG
+	C -> s: {|KCS,C,T2|}shk(gw,s),
+			{|C,T3|}KCS
+	s -> C: {|T3|}KCS,{|tag,Payload|}KCS
+
+Goals:
+	s *->* C: Payload
+

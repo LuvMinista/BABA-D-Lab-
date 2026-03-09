@@ -1,0 +1,33 @@
+Protocol: H530 AnB
+# The constants  t1 - t5 are tags for the
+# different MACs to prevent type-flaw attacks
+
+Types:
+    Agent A,B,s;
+    Number XxX,YxY,g,M,t1,t2,t3,t4,t5;
+    Function [Untyped -> Number] mac;
+    Function [Agent,Agent ->* Symmetric_key] shk
+
+Knowledge:
+    A: A,s,B,g,mac,t1,t2,t3,t4,t5;
+    B: B,s,g,mac,t1,t2,t3,t4,t5;
+    s: A,B,s,g,mac,t1,t2,t3,t4,t5;
+    A,s share shk(A,s);
+    B,s share shk(B,s)   
+
+Actions:
+    A->B: A,B,exp(g,XxX),mac(shk(A,s),t1,A,B,exp(g,XxX))
+    B->s: A,B,exp(g,XxX),mac(shk(A,s),t1,A,B,exp(g,XxX)),
+      B,exp(g,XxX),exp(g,YxY),
+      mac(shk(B,s),t2,A,B,exp(g,XxX),mac(shk(A,s),t1,A,B,exp(g,XxX)),
+		     B,exp(g,XxX),exp(g,YxY))
+    s->B: B,A,mac(shk(A,s),t3,B,exp(g,XxX),exp(g,YxY)),
+      mac(shk(B,s),t4,B,A,mac(shk(A,s),t3,B,exp(g,XxX),exp(g,YxY)))
+    B->A: B,A,exp(g,YxY),mac(shk(A,s),t3,B,exp(g,XxX),exp(g,YxY)),
+      mac(exp(exp(g,XxX),YxY),t5,B,A,exp(g,YxY),mac(shk(A,s),t3,B,exp(g,XxX),exp(g,YxY)))
+    A->B: {|M|}exp(exp(g,XxX),YxY)
+
+Goals:
+    B authenticates A on M		 	 # fail 2 sess
+    M secret between A,B			 # fail 2 sess		
+

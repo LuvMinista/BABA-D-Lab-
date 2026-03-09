@@ -1,0 +1,22 @@
+Protocol: ForwardAny			
+
+Types: 
+	Agent A,B,C;
+	Certified A,B;
+	Number Msg,Msg2
+	
+Knowledge: 
+	A: A,B,C;
+	B: A,B,C;
+	C: A,B,C
+	where A!=B,B!=C,A!=C
+	
+Actions:
+	A -> B,@(A|B,C|B): Msg
+	B -> A: empty
+	A -> B,@(A|B,C|B): Msg2
+	B -> C,^@(A|B,C|-): Msg2
+	
+Goals:
+	B weakly authenticates A on Msg
+	B weakly authenticates A on Msg2

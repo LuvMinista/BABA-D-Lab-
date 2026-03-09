@@ -1,0 +1,24 @@
+Protocol: DenningSaccoCorr AnB # Verified 
+# inserted tag to avoid encryption/decryptyion attack
+# inserted name of intended recipient in signature to prevent Abadi's attack
+
+Types:
+	Agent A,B,s;
+	Number NxA,Text1,Text2,Text3,Text4,tag;
+	SymmetricKey KAB;
+	Function [Agent -> PublicKey] pk,sk;
+
+Knowledge:
+	A: A,B,s,sk(A),inv(sk(A)),sk(s),tag;
+	B: B,sk(s),pk(B),inv(pk(B)),tag;
+	s: s,A,B,sk(A),pk(B),sk(s),inv(sk(s)),tag
+
+Actions:
+	A -> s: A,B
+	s -> A: {A,sk(A)}inv(sk(s)),{B,pk(B)}inv(sk(s))
+	A -> B: {A,sk(A)}inv(sk(s)),{B,pk(B)}inv(sk(s)),{{KAB,NxA,B}inv(sk(A)),tag}pk(B)
+
+Goals:
+	KAB secret between A,B
+	B weakly authenticates A on KAB
+

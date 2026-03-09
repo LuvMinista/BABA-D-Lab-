@@ -1,0 +1,27 @@
+Protocol: EPMO # Attack 
+# Early version of an E-Payment protocol from a paper of Joshua Guttman
+
+Types: 
+	Agent b,C,M;
+	Certified b,C,M;		# agents have key pair (pk,sk) and know hash,hmac
+	Number NxC,NxM,NxB,Goods,Price,one,two,three,four,five,six;
+
+Knowledge: 
+   b: b,C,M,one,two,three,four,five,six;
+   C: b,C,M,one,two,three,four,five,six;
+   M: b,C,M,one,two,three,four,five,six;
+   C,M agree Goods,Price
+   where C!=b, M!=b, C!=M				   # where must be the last declaration
+		
+Actions:
+	C -> M: one,{C,NxC,Goods,Price}pk(M)
+	M -> C: two,{NxC,NxM,M,Goods,Price}pk(C)
+	C -> b: three,{C,NxC,NxM,Price}pk(b)
+	b -> C: four,{hash(C,NxC,NxB,NxM,Price)}inv(sk(b)),{NxC,NxB}pk(C)
+	C -> M: five,{hash(C,NxC,NxB,NxM,Price)}inv(sk(b)),NxB
+	M -> b: six,{hash(b,NxB,NxM)}inv(sk(M))
+
+Goals:
+	M authenticates C on Goods,Price,b
+	b authenticates C on Price,b,M			# Fail 1 session
+	Goods,Price secret between C,M

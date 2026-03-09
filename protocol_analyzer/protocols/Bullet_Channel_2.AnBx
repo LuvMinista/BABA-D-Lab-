@@ -1,0 +1,20 @@
+Protocol: Bullet_Channel_2 AnB
+
+Types:
+	Agent A,B;
+	Number Msg,N
+
+Knowledge:
+	A: A,B;
+	B: B,A
+
+Actions:
+	B *-> A: N
+	A *->* B: N,Msg
+
+Goals:
+	A *->* B: Msg
+	B authenticates A on Msg
+	B weakly authenticates A on Msg
+	Msg secret between A,B
+	

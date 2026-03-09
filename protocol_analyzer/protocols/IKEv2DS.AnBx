@@ -1,0 +1,33 @@
+Protocol: IKEv2DS AnB # Bounded-verified
+
+Types:
+    Agent A,B;
+    Number SA,Na,Nb;
+    Number g,XxKEa,YxKEb;
+    Number M1,M2;
+    Function [Agent -> PublicKey] sk;
+    Function [Number,Number,Number,SymmetricKey -> SymmetricKey] h 
+    
+Knowledge:
+    A: A,sk,inv(sk(A)),B,h,g,sk(B);
+    B: B,sk,inv(sk(B)),h,g
+	where A!=B
+
+Actions:
+    # IKE SA INIT
+    A -> B: A,B,SA, exp(g,XxKEa), Na
+    B -> A: SA, exp(g,YxKEb), Nb
+    # IKE SA AUTH
+    A -> B: {|A,({SA,exp(g,XxKEa),Na,Nb}inv(sk(A))),SA|}h(Na,Nb,SA,exp(exp(g,XxKEa),YxKEb))
+    B -> A: {|B,({SA,exp(g,YxKEb),Na,Nb}inv(sk(B))),SA|}h(Na,Nb,SA,exp(exp(g,XxKEa),YxKEb))
+    
+    # PAYLOAD for implicit key authentication
+    # removing this step leads to a violation of the authentication goals
+    A -> B: {|M1|}exp(exp(g,XxKEa),YxKEb)
+
+Goals:
+    A authenticates B on exp(exp(g,XxKEa),YxKEb)
+    B authenticates A on exp(exp(g,XxKEa),YxKEb)
+    exp(exp(g,XxKEa),YxKEb) secret between A,B
+    # Goal on the PAYLOAD step:
+    A *->* B: M1

@@ -1,0 +1,22 @@
+Protocol: AnBx_BlindForwarding
+
+Types: 
+	Agent C,M,A;
+	Number Price;
+	Certified C,M,A;
+	Function [Agent, Agent ->* Number] ccn
+	
+Knowledge: 
+	C: C,M,A;
+	M: C,M,A;
+	A: C,M,A;
+	C,A share ccn(C,A)
+	
+		
+Actions:
+	C -> M, (C|A|A): ccn(C,A)
+	M -> A, ^(C|A|A): ccn(C,A)
+		
+Goals:
+	A weakly authenticates C on ccn(C,A)  
+	ccn(C,A) secret between C,A

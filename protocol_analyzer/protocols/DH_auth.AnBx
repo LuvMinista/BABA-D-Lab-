@@ -1,0 +1,21 @@
+Protocol: DH_auth
+
+Types:
+	Agent A,B;
+	Certified A;
+	Number Msg,XxX,YxY,g
+
+Knowledge:
+	A: A,B,g;
+	B: A,B,g
+
+Actions:
+	A -> B,(-|-|-): A,B
+	B -> A,(-|-|-): exp(g,YxY)
+	A -> B,(A|B|-): Msg
+	B -> A: empty
+	A -> B,(A|B|-): exp(g,XxX),{|Msg|}exp(exp(g,YxY),XxX)
+
+Goals:
+	Msg secret between A,B		# fail
+	B weakly authenticates A on Msg

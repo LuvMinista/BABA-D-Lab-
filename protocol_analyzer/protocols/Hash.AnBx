@@ -1,0 +1,16 @@
+Protocol: Hash AnB
+
+Types:
+	Agent A,B;
+	Number Msg;
+	Function [Untyped -> Number] hash
+
+Knowledge:
+	A: A,B,hash;
+	B: B,A,hash;
+
+Actions:
+	A -> B: hash(Msg),Msg
+
+Goals:
+	A -> B: hash(Msg)
