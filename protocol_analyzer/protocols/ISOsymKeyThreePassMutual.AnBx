@@ -1,0 +1,21 @@
+Protocol: ISOsymKeyThreePassMutual AnB # Verified & Certified
+
+Types: 
+	Agent A,B;
+    Number NA,NB,Text1,Text2,Text3,Text4,Text5;
+    Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge: 
+	A: A,B;
+	B: B,A;
+	A,B share shk(A,B)
+
+Actions:
+	B->A: NB
+	A->B: {|NA,NB,B,Text2|}shk(A,B)
+	B->A: {|NB,NA,Text4|}shk(A,B)
+
+Goals:
+	A *-> B: Text2
+	B *-> A: Text4
+

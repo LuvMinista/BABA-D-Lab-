@@ -1,0 +1,30 @@
+Protocol: NSL_KeyServer AnB # Verified
+
+Types: 
+	Agent A,B,s;
+    Number NxNA,NxNB;
+    Function [Agent -> PublicKey] pk,sk;
+
+Knowledge:   
+	A: A,pk(A),inv(pk(A)),s,sk(s),B;
+	B: B,pk(B),inv(pk(B)),s,sk(s),A;
+	s: s,pk,sk,inv(sk(s)),B,A
+
+Actions:
+	A -> s: A,B
+	s -> A: {B,pk(B)}inv(sk(s))
+	A -> B: {NxNA,A}pk(B)
+	B -> s: B,A
+	s -> B: {A,pk(A)}inv(sk(s))
+	# B -> A: {NxNA,NxNB}pk(A)		# it has an attack
+	B -> A: {NxNA,NxNB,B}pk(A)
+	A -> B: {NxNB}pk(B)
+
+Goals:
+	 B authenticates A on NxNA
+	 A authenticates B on NxNB
+	 NxNA secret between A,B
+	 NxNB secret between A,B
+	 A *->* B: NxNA
+	 B *->* A: NxNB
+

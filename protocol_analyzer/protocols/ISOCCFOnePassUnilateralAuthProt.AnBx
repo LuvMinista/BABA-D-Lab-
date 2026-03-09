@@ -1,0 +1,22 @@
+Protocol: ISOCCFOnePassUnilateralAuthProt AnB # Verified 
+# Note that this protocol has a trivial replay attack.  We thus
+# specify only weak authentication as goal (not considering replay).
+# The FP-module of OFMC currently does not handle injective
+# authentication
+
+Types:
+    Agent A,B;
+    Number NxA,NxB,Text1,Text2;
+    Function [Agent, Agent ->* SymmetricKey] shk
+
+Knowledge:
+    A: A,B;
+    B: B,A;
+    B,A share shk(A,B)
+
+Actions:
+    A -> B: NxA,B,Text2,{|NxA,B,Text1|}shk(A,B),NxA,B,Text1
+
+Goals:
+    B weakly authenticates A on Text1
+

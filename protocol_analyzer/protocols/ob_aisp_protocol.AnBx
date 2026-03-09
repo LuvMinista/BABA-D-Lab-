@@ -1,0 +1,306 @@
+Protocol: ob_aisp_protocol AnBx
+
+# Paolo Modesti, Leo Freitas, Qudus Shotomiwa and Abdulaziz Almehrej
+# Security Analysis of the Open Banking Account and Transaction API Protocol
+# Cyber Security and Applications, Volume 3, December 2025, 100097, 2025
+# https://doi.org/10.1016/j.csa.2025.100097
+
+# Version: 14
+# to generate ProVerif code, use 
+# anbxc <file> -expandbullets out:PVT 
+# additionally add -pvmovenewup (for goal 6 only), other wise Execution time: 06h:41m:56s.995ms (I)
+# ------------------------------------------------------------------------------
+#
+# Experimental
+# added some types URI, IntentNo to try to speed up the verification with ProVerif
+
+# OpenBanking UK knowledge base
+# https://bankio.co.uk/open-banking/knowledge-base/OpenBankingUK/
+# OAuth/OIDC
+# https://auth0.com/docs/authenticate/protocols/openid-connect-protocol#what-is-openid-connect-oidc-
+
+
+# user demo
+# https://retailcure.org.uk/open-banking-explained/
+# https://exactly.com/blog/open-banking-examples#Major-Open-Banking-Use-Cases
+
+# https://github.com/OpenBankingUK
+
+# https://openbankinguk.github.io/read-write-api-site3/v3.1.11/profiles/read-write-data-api-profile.html
+# https://openbankinguk.github.io/read-write-api-site3/v3.1.11/profiles/account-and-transaction-api-profile.html
+# https://openbankinguk.github.io/read-write-api-site3/v3.1.11/resources-and-data-models/aisp/
+
+# Demo step by step
+# https://github.com/OpenBankingUK/OBL-ModelBank-Integration
+# https://openbanking.atlassian.net/wiki/spaces/DZ/pages/313918598/Integrating+a+TPP+with+Ozone+Model+Banks+Using+Postman+on+Directory+Sandbox#OpenID-Connect-End-points
+
+# https://cloudentity.com/developers/basics/openbanking/open-banking-uk-flow/
+
+# documentation for participants
+# https://www.openbanking.org.uk/wp-content/uploads/Guidelines-for-Read-Write-Participants.pdf
+
+# https://ozoneapi.com/ozone-api-sandbox/
+# https://cloudentity.com/developers/get-started/
+
+# Read/Write API specification
+# https://github.com/OpenBankingUK/read-write-api-specs
+
+# https://developer.mastercard.com/open-banking-connect/documentation/referenceapp/
+# https://developer.mastercard.com/open-banking-connect/documentation/aisfeatures/exchange-psu-consent/
+
+# https://docs.nordicapigateway.com/#/
+# https://www.postman.com/
+
+# https://nordicapis.com/openid-connect-overview-of-financial-grade-api-profile-fapi/
+
+# Account and Transaction API sand box
+# https://opendemo.bank-api.net/apis/open-banking/account-and-transaction-api
+# https://www.openbankproject.com/getting-started/
+# https://github.com/OpenBankProject/
+# https://github.com/OpenBankProject/OBP-Hola
+
+# https://apiexplorer-ii-sandbox.openbankproject.com/
+# Select more UK 3.1
+
+# JSON Web Tokens are an open, industry standard RFC 7519 method for representing claims securely between two parties.
+# https://jwt.io/
+
+# https://github.com/cloudentity/openbanking-quickstart
+
+# https://editor.swagger.io/
+# D:\openbanking-quickstart-master\api\obuk
+
+# Tesobe docker image
+# https://hub.docker.com/r/openbankproject/obp-api
+
+# Python app for OBP
+# https://pypi.org/project/obp-python/#description
+
+# More links 
+# https://uk.ob.docs.wso2.com/en/latest/try-out/account-and-transaction-flow/
+# https://www.bankofapis.com/products/natwest-group-open-banking/accounts/documentation/rbsi/3.1.11
+# https://www.indexnine.com/showcase/open-banking-consent-app/
+
+
+# https://docs.ecospend.com/ais/v2/diagrams/consentFlowUX.png
+# https://docs.ecospend.com/ais/v2/
+
+# https://www.yapily.com/blog/open-banking-use-cases
+
+# https://blog.scottlogic.com/2018/08/24/the-ux-of-consent-models-in-open-banking.html
+# https://www.openbanking.org.uk/wp-content/uploads/2021/04/Customer-Experience-Guidelines-V3.1.3-web.pdf
+
+# -----------------------------------------------------------------
+
+
+
+Types:
+
+    # Four parties -- ASPSP = authorisation server + resource server
+    Agent PSU, AISP, aspspA, aspspR;
+    Certified PSU, AISP, aspspA, aspspR;
+	
+    # PSU Redirection URIs
+    URI ASPSPAuthPSUEndpoint, AISPEndpoint;
+    
+    # Abstract away from specific intent details agreed on between PSU and AISP
+    IntentNo IntentAgreement;
+      
+    # constants
+    Number empty;
+    # not really used, just to create the types, so that they can be used
+    JWT nulljwt;			# JSON web Token
+    AccountNumber nullaccount;
+
+    # FIX
+    # https://developer.barclays.com/apis/account-and-transactions/20e74071-13fb-44eb-b98f-2c89d6251ad8.bdn/documentation#oauth-provider-endpoints-for-sandbox:
+    # Access tokens are used to allow AISPs access to protected resources (including APIs), the tokens are only valid for a short duration (e.g. 30 minutes). 
+    # random value
+    
+    UUID AISPSecretNonce;
+    UUID AccountsSecretNonce;
+    
+    # ---- ASPSP Authorisation Server Functionality ---- #
+
+    # Returns agreed on secret between AISP and authorisation server 
+    # Params: AISP ID -- Output: the secret (private function)
+    Function [Agent, Agent ->* Number] fAISPSecret;
+    # Returns agreed on secret between PSU and authorisation server
+    # Params: PSU ID -- Output: the secret 
+    Function [Agent, Agent ->* Number] fPSUSecret;
+    # Generate a base level token for accessing consent creation API
+    # Params: AISP ID, AISPSecretNonce -- Output: client token
+    Function [Agent, UUID -> JWT] fClientCredToken;
+    # Generate authorisation code exchangeable for an access token
+    # Params: consent ID -- Output: authorisation code
+    Function [JWT -> JWT] fAuthCode;
+    # Create an access token for account data access
+    # Params: authorisation code -- Output: authorisation code token
+    Function [JWT -> JWT] fAuthCodeToken;
+        
+    # ---- ASPSP Resource Server Functionality ---- #
+    
+    # Create and return a consent resource
+    # Params: client token, intent payload -- Output: consent ID
+    Function [JWT, IntentNo -> JWT] fCreateIntent;
+    # Retrieve the consent with the given identifier
+    # Params: consent ID -- Output: consent resource
+    Function [JWT -> IntentNo] fGetIntent; 
+    # Return complete list of PSU accounts
+    # Params: PSU ID -- Output: list of all PSU accounts with ASPSP
+    Function [Agent -> AccountNumber] fFetchAccounts;
+    # Change consent's status to authorised
+    # Params: PSU ID, consent ID, selected PSU accounts -- Output: authorisation result
+    Function [Agent, JWT, IntentNo -> JWT] fAuthoriseIntent;
+    # Fetch PSU account(s) (request by AISP)
+    # Params: authorisation code token, account identifier -- Output: account info.
+    # Note: if account identifier = empty then it is a bulk call
+    Function [JWT, UUID, Number -> AccountNumber] fAccountsEndpoint
+
+Definitions:
+    # AISP credentials to be authenticated by ASPSP
+    AISPCredentials   : AISP, fAISPSecret(aspspA,AISP);
+    
+    # **RFC6749 4.4. Client Credentials Grant
+    # https://datatracker.ietf.org/doc/html/rfc6749#section-4.4
+    # For asking for a client token
+    ClientTokenReq    : AISPCredentials;
+    
+    # FIX
+    # For returning a client token
+    # Token generated through the Client Credential Grant (refer to it as client token)
+    # The AISPSecretNonce param allow to generate a different client token for every session
+    ClientToken       : fClientCredToken(AISP,AISPSecretNonce);
+    ClientTokenRes    : AISPSecretNonce,ClientToken;				# the nonce must be sent in the response, x-fapi-interaction-id: A UUID that provides a unique reference to be created for each request/response.
+
+    # **OB Account Access Consents v3.1.11
+    # For asking for the creation of an intent
+    # Assume that the risk data is included with the intent agreement
+    IntentReq         : ClientToken, IntentAgreement;
+    # For returning for the created intent
+    # Treat the intent as an intent (AccountRequestId) or a complete intent object (abstraction)
+    Intent  		  :	fCreateIntent(ClientToken, IntentAgreement);
+    
+    #  ------- Consent Authorisation (Authorisation Code Grant) -------
+    # **RFC6749 4.1. Authorisation Code Grant + OB Account and Transaction API Sequence Diagram (Step 3) 
+    # Redirection command given by AISP to PSU to redirect to ASPSP and authorise consent
+    RedirectToASPSPCmd: ASPSPAuthPSUEndpoint, AISPEndpoint, Intent;
+    # PSU Credentials to be authenticated by ASPSP
+    PSUCredentials    : PSU, fPSUSecret(PSU,aspspA);
+    # Payload sent by PSU to ASPSP authorisation server to authenticate themselves and initiate consent authorisation
+    InitAuthIntentReq : RedirectToASPSPCmd, PSUCredentials;
+    
+    # For PSU consent review and account selection
+    RetrieveIntentReq : Intent, PSU;
+    RetrieveIntentRes : fGetIntent(Intent), fFetchAccounts(PSU);
+    
+    # For updating consent resource's state
+    
+    SelectedAccounts: IntentAgreement;			# We assume here that the PSU will select all accounts in the IntentAgreement
+    
+    AuthoriseIntentReq: PSU, Intent, SelectedAccounts;
+    AuthoriseIntentRes: fAuthoriseIntent(PSU, Intent, SelectedAccounts);
+    
+    # For generating authorisation code
+    AuthorisationCode : fAuthCode(Intent);
+    # Redirection command given by ASPSP to PSU to redirect to AISP
+    RedirectToAISPCmd : AISPEndpoint, AuthorisationCode;
+    #  ----------------------------------------------------------------
+    
+    # **RFC6749 4.1. Authorisation Code Grant
+    # For asking for an authorisation token
+    AuthTokenReq      : AISPCredentials, AuthorisationCode;
+    # For returning an authorisation token
+    AuthToken         : fAuthCodeToken(AuthorisationCode);      
+    AuthTokenRes      : AuthToken;                                                      
+    
+    # **OB Accounts v3.1.1
+    # For asking for the PSU accounts list
+    AccountsReq       : AuthToken;  
+    
+    # For returning the PSU accounts list
+    Accounts          : fAccountsEndpoint(AuthToken, AccountsSecretNonce, empty);
+    
+Knowledge:
+    PSU      : PSU, AISP, aspspA, aspspR;
+    AISP     : AISP, PSU, aspspA, aspspR;
+
+    aspspA: PSU, AISP, aspspA, aspspR, fClientCredToken, fAuthCode, fAuthCodeToken;
+    aspspR : PSU, AISP, aspspA, aspspR, fCreateIntent, fGetIntent, fFetchAccounts, fAuthoriseIntent,fAccountsEndpoint;
+    
+    # FIX agents share authentication credentials
+    aspspA,PSU share fPSUSecret(PSU,aspspA);
+    aspspA,AISP share fAISPSecret(aspspA,AISP);
+
+    # Impose condition that a PSU cannot also be the AISP or any of the ASPSP's servers
+    # Impose condition that AISP cannot be ASPSP due to unrealistic conditions if allowed in AnB 
+    
+    where PSU!=AISP,PSU!=aspspA,PSU!=aspspR,AISP!=aspspA,AISP!=aspspR
+    
+    # 16518671ms Execution time: 00h:53m:57s.981ms
+    
+Actions:
+    #   ----- Step 1: request account information -----
+    # The flow begins with a PSU consenting to allow an AISP to access account information data. 
+   
+    # https://standards.openbanking.org.uk/customer-experience-guidelines/account-information-services/account-information-consent/latest/
+    # the PSU indicates the resources and the ASPSP (bank)
+    PSU *->* AISP       : IntentAgreement, PSU, aspspA    #A1.1
+    
+    #   ----- Step 2: setup account access consent ----
+    # the AISP authenticate with the aspspA using pre-shared credentials AISPCredentials aka ClientTokenReq
+    # https://datatracker.ietf.org/doc/html/rfc6749#section-4.4
+    
+    #/account-access-consents
+    # https://openbankinguk.github.io/read-write-api-site3/v3.1.11/resources-and-data-models/aisp/account-access-consents.html#post-account-access-consents
+    AISP *->* aspspA    : ClientTokenReq     #A2.1  initiate client credential grant Get account/transaction information POST Client Credential Grant ) account scope
+    aspspA *->* AISP    : ClientTokenRes     #A2.2  access-token Response: { access_token=" ", token_type="Bearer", expires_in=3600 } (image 5)
+
+    
+    # This resource indicates the consent that the AISP claims it has been given by the PSU to retrieve account and transaction information.
+    AISP *->* aspspR     : IntentReq #A2.3  post /account-access-consents Image 6
+    aspspR *->* AISP     : Intent    #A2.4  HTTP 201 (Created), ConsentID Response { ConsentID = " ",  other data: permissions, Risk... } image 6)
+    
+    
+    #   ----- Step 3: authorise consent -----
+    #   (using authorisation code grant)
+    #       ----- Step 3.1 -----
+    AISP *->* PSU       : RedirectToASPSPCmd #A3.1.1 GET /auth-code-url/.../scope={requestscope}+++ HTTP 302 (Found), Redirect (ConsentId) Image 7 get URL copy/paste in browser
+    PSU *->* aspspA     : InitAuthIntentReq  #A3.1.2 Follow redirect (ConsentId)	authenticate (PSU user name and password)	
+
+    #       ----- Step 3.2 -----
+    aspspA *->* aspspR: RetrieveIntentReq    #A3.2.1 request authentication		
+    aspspR *->* aspspA: RetrieveIntentRes    #A3.2.2
+    aspspA *->* PSU     : RetrieveIntentRes  #A3.2.3
+    PSU *->* aspspA     : SelectedAccounts   #A3.2.4 select accounts image-20230720-174338.png
+    aspspA *->* aspspR: AuthoriseIntentReq   #A3.2.5 Exchange authorization-code for access token GET auth-code-url
+    aspspR *->* aspspA: AuthoriseIntentRes   #A3.2.6
+    #       ----- Step 3.3 -----    
+    aspspA *->* PSU     : RedirectToAISPCmd  #A3.3.1 HTTP 302 (Found), Redirect (authorization-code) Response {authcode from url ...} Image 10
+    PSU *->* AISP       : RedirectToAISPCmd  #A3.3.2 Follow redirect (authorization-code)
+    AISP *->* aspspA    : AuthTokenReq       #A3.3.3 Poll at /token using auth-req-id (auth code grant) POST Image 11 code=authtoken)
+    aspspA *->* AISP    : AuthTokenRes       #A3.3.4 access-token	
+    
+    #   ----- Step 4: request data ------
+    AISP *->* aspspR      : AccountsReq      #A4.1 GET /accounts/{AccountID}/transactions Image 13
+    aspspR *->* AISP      : Accounts, PSU  	 #A4.2 /HTTP 200, List of transactions (AccountRes)
+  
+Goals:
+    
+    # all goals OK with OFMC 1 session, ProVerif unbounded, but G4 only for weak auth
+    
+    fAISPSecret(aspspA,AISP) secret between AISP, aspspA  #G1 PV OK (mutual)
+    fPSUSecret(PSU,aspspA) secret between PSU, aspspA  #G2 PV OK (mutual)
+    ClientToken, AuthToken secret between AISP, aspspA, aspspR  #G3PV OK (mutual)
+
+    PSU weakly authenticates aspspA on fGetIntent(Intent)  #G4 PV OK (mutual)
+    # PSU authenticates aspspA on fGetIntent(Intent)  #G4 PV loops
+    
+    aspspR weakly authenticates PSU on SelectedAccounts  #G5 PV OK (mutual)
+    
+    PSU weakly authenticates AISP on ASPSPAuthPSUEndpoint, AISPEndpoint  #G6 PV OK (mutual)
+    
+    Accounts secret between AISP, aspspR  #G7 PV OK (mutual)
+    
+    AISP weakly authenticates aspspR on Accounts  #G8 PV OK (mutual)
+

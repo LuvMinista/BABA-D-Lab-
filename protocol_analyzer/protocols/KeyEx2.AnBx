@@ -1,0 +1,27 @@
+Protocol: KeyEx2 AnB
+# 2nd version: Adding encryption.
+# Problem: encryption does not include the name of the other communication partner 
+
+Types:
+	Agent A,B,s;
+	SymmetricKey KAB;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+	A: A,B,s;
+	B: B,A,s;
+	s: A,B,s;
+	A,s share shk(A,s);
+	B,s share shk(B,s)
+
+Actions:
+	A -> s: A,B
+	# s creates key KAB
+	s -> A: {|KAB|}shk(A,s),{|KAB|}shk(B,s)
+	A -> B: A,{|KAB|}shk(B,s)
+
+Goals:
+	A authenticates s on KAB,B
+	B authenticates s on KAB,A
+	KAB secret between A,B,s
+

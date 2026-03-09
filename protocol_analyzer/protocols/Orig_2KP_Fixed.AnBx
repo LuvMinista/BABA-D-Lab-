@@ -1,0 +1,72 @@
+Protocol: Orig_2KP_Fixed
+
+Types: 
+	Agent C,M,a;
+	Certified M,a;
+	Number Desc,Price,ID,NxV,NxVC,NxNONCE;
+	SeqNumber TID,Auth;
+	HmacKey HxRC,HxSALTC;
+	Function [Agent,Agent ->* Number] can
+
+Definitions:
+	IDC: hmac(can(C,a),HxRC);
+	Common: Price,ID,TID,NxNONCE,hmac(can(C,a),HxRC),hmac(Desc,HxSALTC),hash(NxV),hash(NxVC);
+	Clear: ID,TID,NxNONCE,hash(Common),hash(NxV),hash(NxVC);
+	Slip: Price,hash(Common),can(C,a),HxRC;
+	EncSlip:{Slip}pk(a);
+	SigM:{hash(Common)}inv(sk(M));
+  	SigM2: {hash(Common),EncSlip}inv(sk(M));
+	SigM3: {a,hash(Common),EncSlip}inv(sk(M));
+	# SigA: {hash(Auth,hash(Common))}inv(sk(a))
+	# Proposed modification of iKP - Bugliesi-Modesti "AnBx - Security Protocols Design and Verification"
+	SigA: {C,M,hash(Auth,hash(Common))}inv(sk(a))
+	
+Knowledge: 
+	C: C,M,a;
+	M: C,M,a;
+	a: C,M,a;
+	C,a share can(C,a);
+	C,M agree Price,Desc
+
+Actions:
+	
+# 1. Initiate 
+	C -> M: HxSALTC,IDC
+	
+# 2. Invoice 
+	M -> C: Clear,SigM
+	
+# 3. Payment
+	C -> M: EncSlip
+	
+# 4. Auth-Request
+	# M -> a: Clear,hmac(Desc,HxSALTC),SigM2
+	M -> a: Clear,hmac(Desc,HxSALTC),EncSlip,SigM3
+		
+# 5. Auth-Response
+	a -> M: Auth, SigA
+	
+# 6. Confirm 
+	M -> C: Auth,SigA,NxV,NxVC 
+	
+Goals:
+
+	# credit card secrecy and authorisation
+	can(C,a) secret between C,a
+	# a authenticates C on can(C,a)		# fail S1TC
+	
+	# global agreement
+	C authenticates M on Common
+	a weakly authenticates M on Common
+	# a authenticates C on Common
+	# M authenticates C on Common	
+	
+	# the following goals fail S1CT if original SigA is used
+	M authenticates a on Auth
+	C authenticates a on Auth
+	M authenticates a on Common,Auth
+	C authenticates a on Common,Auth
+	
+	# secrets
+	Desc secret between C,M
+	# Auth secret between C,M,a		# fails S1TC

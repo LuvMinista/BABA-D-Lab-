@@ -1,0 +1,16 @@
+Protocol: TagTT AnB
+
+Types:
+	Agent A,B;
+	Number Msg;
+	Function [Number -> Number] f;
+
+Knowledge:
+	A: A,B,f;
+	B: B,A,f
+
+Actions:
+	A -> B: f(Msg)
+
+Goals:
+	A -> B: f(Msg)

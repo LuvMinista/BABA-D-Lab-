@@ -1,0 +1,28 @@
+Protocol: WooLamF AnB # Verified
+
+# http://www.lsv.fr/Software/spore/wooLamPif.html
+# Author(s): Woo, Lam  (1994)
+# Summary: One way authentication protocol with public keys and trusted server. 
+
+# Secure
+Types:
+	Agent A,B,s;
+	Number NB;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+    A: A,B,s;
+    B: B,A,s;
+    s: A,B,s;
+    A,s share shk(A,s);
+    B,s share shk(B,s)
+
+Actions:
+	A -> B: A
+	B -> A: NB
+	A -> B: {|A,B,NB|}shk(A,s)
+	B -> s: {|A,B,NB,{|A,B,NB|}shk(A,s)|}shk(B,s)
+	s -> B: {|A,B,NB|}shk(B,s)
+
+Goals:
+	B authenticates A on NB

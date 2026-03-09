@@ -1,0 +1,27 @@
+Protocol: NSPK AnB
+# fail - attack on secrecy & authentication
+
+Types:
+	Agent A,B;
+	Number NxNA,NxNB;
+	Function [Agent -> PublicKey] pk
+
+Knowledge:
+	A: A,pk,inv(pk(A)),B;
+	B: B,pk,inv(pk(B))
+
+Actions:
+	A -> B: {NxNA,A}pk(B)
+	B -> A: {NxNA,NxNB}pk(A)
+	A -> B: {NxNB}pk(B)
+
+Goals:
+
+	B authenticates A on NxNA
+	A authenticates B on NxNB
+	NxNA secret between A,B
+	NxNB secret between A,B
+
+	# As channel goals (note secrecy is a strictly weaker goal here)
+	# A *->* B: NxNA
+	# B *->* A: NxNB

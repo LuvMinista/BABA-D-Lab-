@@ -1,0 +1,42 @@
+Protocol: WooLamMutual AnB
+
+# http://www.lsv.fr/Software/spore/wooLamMutual.html
+# Author(s): T.Y.C Woo and S.S. Lam (1994)
+# Summary: Key distribution and mutual authentication with trusted server and symmetric keys. 
+
+# Attack based on parallel sessions
+
+Types:
+    Agent A,B,s;
+    Number NA,NB;
+    SymmetricKey KAB;
+    Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+    A: A,B,s;
+    B: B,A,s;
+    s: A,B,s;
+    A,s share shk(A,s);
+    B,s share shk(B,s)
+
+Actions:
+    A -> B: A,NA
+    B -> A: B,NB
+    A -> B: {|A,B,NA,NB|}shk(A,s)
+    B -> s: {|A,B,NA,NB|}shk(A,s),{|A,B,NA,NB|}shk(B,s)
+    s -> B: {|B,NA,NB,KAB|}shk(A,s),{|A,NA,NB,KAB|}shk(B,s)
+    B -> A: {|B,NA,NB,KAB|}shk(A,s),{|NA,NB|}KAB
+    A -> B: {|NB|}KAB
+
+Goals:
+	B authenticates s on KAB,A
+	A authenticates s on KAB,B
+	KAB secret between A,B
+    
+    # B authenticates s on KAB
+	# A authenticates s on KAB
+    # B authenticates A on KAB
+    # A authenticates B on KAB
+    # B authenticates A on NA
+    # A authenticates B on NB
+    # KAB secret between A,B

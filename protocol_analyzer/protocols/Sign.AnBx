@@ -1,0 +1,19 @@
+Protocol: Sign AnB
+
+Types: 
+	Agent A,B;
+	Number Msg;
+	Function [Agent -> PublicKey] sk
+
+Knowledge: 
+	A: A,B,sk,inv(sk(A));
+	B: A,B
+	
+Actions:
+	A -> B: {B,Msg}inv(sk(A))
+	B -> A: B
+	A -> B: sk(A)
+	
+Goals:
+	B weakly authenticates A on Msg
+	A -> B: Msg

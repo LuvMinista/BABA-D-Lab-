@@ -1,0 +1,27 @@
+Protocol: KeyEx3b AnB
+# 3rd version: adding agent names into encryption
+# remaining problem: replay
+
+Types:
+	Agent A,B,s;
+	SymmetricKey KAB;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+	A: A,B,s;
+	B: B,A,s;
+	s: A,B,s;
+	A,s share shk(A,s);
+	B,s share shk(B,s)
+
+Actions:
+	A -> s: A,B
+	# s creates key KAB
+	s -> A: {|KAB,A,B|}shk(A,s),{|KAB,A,B|}shk(B,s)
+	A -> B: {|KAB,A,B|}shk(B,s)
+
+Goals:
+	A authenticates s on KAB,B
+	B authenticates s on KAB,A
+	KAB secret between A,B,s
+

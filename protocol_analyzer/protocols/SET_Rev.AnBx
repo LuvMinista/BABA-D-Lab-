@@ -1,0 +1,80 @@
+Protocol: SET_Rev
+
+# Signed Purchase Request
+#
+# M.Bugliesi, S.Calzavara, S.Modersheim and P.Modesti "Security Protocol Specification and Verification with AnBx"
+
+Types:
+	Agent C,M,a;
+	Certified C,M,a;
+	Number PurchAmt,OrderDesc,NxLIDM,NxXID,NxAuthCode,tag;
+	Function [Agent,Agent ->* Number] pan
+
+# BrandID: Visa or Master card (can be dropped)	
+# Date: (can be dropped)
+	
+Definitions:
+	TID: NxLIDM,NxXID;
+	OIdata: OrderDesc;
+	PIdata: pan(C,a);
+	HOD: [OIdata:M],[PIdata:a];
+	Contract: PurchAmt,TID,HOD
+	
+Knowledge: 
+	C: C,M,a,tag;
+	M: C,M,a,tag;
+	a: C,M,a,tag;
+	C,a share pan(C,a);
+	C,M agree PurchAmt,OrderDesc;
+	where C!=a,C!=M,C!=a		# reduces verification time in OFMC
+
+Actions:
+	
+# 1. Purchase Initialisation Request
+	C -> M,@(C|M|M): NxLIDM
+	
+# 2. Purchase Initialisation Response	
+	M -> C,@(M|C|C): NxXID
+	
+# 3. Purchase Request
+	C -> M,@(C|M|M): TID,HOD
+	M -> C: empty
+	C -> M,(C|a|a): TID,HOD,PurchAmt,PIdata
+
+# 4. Authorisation Request
+	M -> a,^(C|a|a): TID,HOD,PurchAmt,PIdata
+	a -> M: empty
+	M-> a,@(M|a|a): TID,HOD,PurchAmt
+
+# 5. Authorisation Response
+	a -> M,@(a|M,C|M): TID,HOD,NxAuthCode 
+	
+# 6. Purchase Response
+	M -> C,^@(a|M,C|C): TID,HOD,NxAuthCode
+	
+Goals:
+
+	# credit card secrecy and authorisation
+	pan(C,a) secret between C,a
+	a weakly authenticates C on pan(C,a)
+ 		
+	# included in a stronger goal Contract,NxAuthCode
+	M authenticates a on NxAuthCode 
+	C authenticates a on NxAuthCode
+	# extra goal forwarded auth
+	C authenticates M on NxAuthCode
+	
+	# global agreement
+	a authenticates M on Contract
+	a authenticates C on Contract
+	C authenticates a on Contract,NxAuthCode
+	C authenticates M on Contract
+	M authenticates C on Contract
+	M authenticates a on Contract,NxAuthCode
+
+	# secrets
+	TID secret between C,M,a
+	HOD secret between C,M,a
+	OrderDesc secret between C,M
+	PurchAmt secret between C,M,a
+	NxAuthCode secret between C,M,a

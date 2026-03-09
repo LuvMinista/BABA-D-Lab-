@@ -1,0 +1,56 @@
+Protocol: Rev_3KP
+	
+Types: 
+	# Agent C,M,a;
+	Agent a,M,C;
+	Certified C,M,a;
+	Number Desc,Price,TID,Auth;
+	Function [Agent,Agent ->* Number] ccn
+
+Definitions:
+	Can: ccn(C,a);
+	HCan: [Can:a];
+	HDesc: [Desc:M];
+	HContract: [Price,TID,HCan,HDesc]
+
+Knowledge:
+	C: C,M,a;
+	M: C,M,a;
+	a: C,M,a;
+	C,a share Can;
+	C,M agree Price,Desc
+
+Actions:
+	C -> M,@(C|M|M): HCan,HDesc
+	M -> C,@(M|C|C): TID,HContract
+	C -> M,(C|a|a): Price,TID,Can,HCan,HContract
+	M -> a,^(C|a|a): Price,TID,Can,HCan,HContract
+	a -> M: empty
+	M -> a,@(M|a|a): Price,TID,HDesc,HContract
+	a -> M,@(a|M,C|M): Auth,TID,HContract
+	M -> C,^@(a|M,C|C): Auth,TID,HContract
+
+Goals:
+	
+	# credit card secrecy and authorisation
+	Can secret between C,a
+	a weakly authenticates C on Can					# strong fail PROVERIF
+	
+	# included in a stronger goal HContract,Auth
+	M authenticates a on Auth
+	C authenticates a on Auth
+
+	# global agreement
+	C authenticates M on HContract
+	a weakly authenticates M on HContract			# strong auth fail PROVERIF
+	
+	M authenticates a on HContract,Auth
+	C authenticates a on HContract,Auth
+	
+	# a weakly authenticates C on HContract
+	M authenticates C on HContract			
+	
+	# secrets
+	Desc secret between C,M
+	Auth secret between C,M,a
+	Price secret between C,M,a

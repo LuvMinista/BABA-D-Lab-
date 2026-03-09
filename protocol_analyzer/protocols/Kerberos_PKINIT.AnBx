@@ -1,0 +1,38 @@
+Protocol: Kerberos_PKINIT AnB
+
+Types:
+	Agent C,ath,gw,s;
+	Number N1,N2,T0,T1,T2,Payload,tag;
+	Function [Agent -> PublicKey] pk,sk;
+	Function [Untyped -> Hash] hash;
+	SymmetricKey KCG,KCS,Ktemp;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge: 
+	C: C,ath,gw,s,sk(ath),sk(C),inv(sk(C)),pk(C),inv(pk(C)),hash,tag,pk,sk;
+	ath: C,ath,gw,pk(C),sk(ath),inv(sk(ath)),hash,tag;
+	gw: ath,s,gw,hash,tag;
+	s: gw,s,hash,tag;
+	gw,s share shk(gw,s);
+	ath,gw share shk(ath,gw)
+	where C!=ath
+
+Actions:
+	C -> ath: C,gw,N1,{T0,N1,hash(C,gw,N1)}inv(sk(C))   
+	ath -> C: C,
+			  {|ath,C,gw,KCG,T1|}shk(ath,gw),
+			  {|gw,KCG,T1,N1|}Ktemp,
+			  {tag,{Ktemp}inv(sk(ath))}pk(C)
+	C -> gw: s,N2,
+			{|ath,C,gw,KCG,T1|}shk(ath,gw),
+			{|C,T1|}KCG
+	gw -> C: C,
+			{|C,s,KCS,T2|}shk(gw,s),
+			{|s,KCS,T2,N2|}KCG
+	C -> s: {|C,s,KCS,T2|}shk(gw,s),
+			{|C,hash(T2)|}KCS
+	s -> C: {|hash(T2)|}KCS, {|tag,Payload|}KCS
+
+Goals:
+	s *->* C: Payload
+

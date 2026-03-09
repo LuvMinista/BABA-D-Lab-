@@ -1,0 +1,17 @@
+Protocol: SharedKey AnB
+
+Types:
+	Agent A,B;
+	Number Msg;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+	A: A,B;
+	B: B,A;
+	A,B share shk(A,B)
+
+Actions:
+	A -> B: {|Msg|}shk(A,B)
+
+Goals:
+	A ->* B: Msg

@@ -1,0 +1,23 @@
+Protocol: ISOpubKeyOnePassUnilateralAuthProt AnB # Verified
+
+# Note that this protocol has a trivial replay attack. We thus
+# specify only weak authentication as goal (not considering replay).
+# The FP-module of OFMC currently does not handle injective
+# authentication
+
+Types:
+	Agent A,B,s;
+	Number NxNA,Text1;
+	Function [Agent -> PublicKey] sk;
+
+Knowledge:
+	A: A,B,sk(A),inv(sk(A));
+	B: B,sk(s);
+	s: A,sk(A),inv(sk(s))
+
+Actions:
+	s -> A: {A,sk(A)}inv(sk(s))
+	A -> B: {A,sk(A)}inv(sk(s)),{NxNA,B,Text1}inv(sk(A))
+
+Goals:
+	B weakly authenticates A on Text1

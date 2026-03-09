@@ -1,0 +1,22 @@
+Protocol: ISOCCFTwoPassMutualAuthProtCorr AnB # Verified 
+# The original protocol has a reflection attack that we correct here by a tag in the first message.
+
+Types: 
+	Agent A,B;
+    Number NxA,NxB,Text1,Text2,Text3,Text4,Text5,tag;
+    Function [Untyped -> Number] f;
+	Function [Agent, Agent ->* SymmetricKey] shk
+
+Knowledge: 
+	A: A,B,f,tag;
+	B: B,A,f;
+	B,A share shk(A,B)
+
+Actions:
+	A -> B: f(shk(A,B),NxA,B,Text1,tag),NxA,B,Text1
+	B -> A: f(shk(A,B),NxB,A,Text3),NxB,A,Text3
+
+Goals:
+	B weakly authenticates A on Text1 
+    A weakly authenticates B on Text3
+

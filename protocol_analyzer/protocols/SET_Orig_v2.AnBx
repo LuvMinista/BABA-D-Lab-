@@ -1,0 +1,102 @@
+Protocol: SET_Orig_v2
+
+# Unsigned Purchase Request
+#
+# G.Bella, F.Massacci and L.C.Paulson "Verifying the SET Purchase Protocols"
+# 
+# Amendments
+# M.Bugliesi, S.Calzavara, S.Modersheim and P.Modesti "Security Protocol Specification and Verification with AnBx"
+
+Types: 
+	Agent C,M,a;
+	Certified M,a;
+	Number PurchAmt,NxXID,OrderDesc,NxLIDM,NxChallC,NxChallM,NxAuthCode;
+	Function [Agent,Agent ->* Number] pan
+	
+	# pan(C,a) abstract CardSecret,PAN,PANSecret  see AVISPA SM (AI)
+	
+Definitions:
+	TID: NxLIDM,NxXID;
+	HOD: hash(OrderDesc,PurchAmt);
+	PIHead: NxLIDM,NxXID,HOD,PurchAmt,M,hash(NxXID,pan(C,a));
+	OIData: NxLIDM,NxXID,NxChallC,HOD,NxChallM;
+	PANData: pan(C,a);
+	PIData: PIHead,PANData;
+	# PIDualSign: {hash(PIData),hash(OIData)}inv(sk(C)),{PIHead,hash(OIData),PANData}pk(a);
+	PIDualSign: hash(PIData),hash(OIData),{PIHead,hash(OIData),PANData}pk(a);
+	OIDualSign: OIData,hash(PIData);
+	Contract: PurchAmt,TID,hash(PIData),hash(OIData)
+	
+Knowledge: 
+	C: C,M,a;
+	M: C,M,a;
+	a: C,M,a;
+	C,a share pan(C,a);
+	C,M agree PurchAmt,OrderDesc
+
+	Actions:
+	
+# 1. Purchase Initialization Request
+# The Cardholder sends the Merchant a freshness challenge (NxChallC)
+# and a local transaction identifier (NxLIDM).
+
+	C -> M : NxLIDM,NxChallC
+
+# 2. Purchase Initialization Response
+# The Merchant replies with a signed message that includes a freshness
+# challenge (NxChallM) and generates a nonce that serves as the globally
+# unique transaction identifier NxXID
+
+	M -> C : {NxLIDM,NxXID,NxChallC,NxChallM}inv(sk(M))
+
+# 3. Purchase Request
+# Payment Instructions PIData and the Order Information OIData
+
+	C -> M : PIDualSign,OIDualSign
+
+# 4. Authorization Request
+
+	M -> a : {{NxLIDM,NxXID,hash(OIData),HOD,PIDualSign}inv(sk(M))}pk(a)
+
+# 5. Authorisation Response
+
+#a -> M : {{NxLIDM,NxXID,PurchAmt,NxAuthCode}inv(sk(a))}pk(M)
+# Amended step 5
+	a -> M : {{M,NxLIDM,NxXID,PurchAmt,NxAuthCode}inv(sk(a))}pk(M)
+
+# 6. Purchase Response
+
+	# M -> C : {NxLIDM,NxXID,NxChallC,hash(PurchAmt)}inv(sk(M))
+	# Amended step 6
+	M -> C : {C,NxLIDM,NxXID,NxChallC,hash(PurchAmt),NxAuthCode}inv(sk(M))
+
+Goals: 
+
+	# credit card secrecy and authorisation
+	pan(C,a) secret between C,a
+	# a authenticates C on pan(C,a)		# FAILED S1TC
+ 		
+	# included in a stronger goal TID,HOD,NxAuthCode
+	M authenticates a on NxAuthCode
+	# C authenticates a on NxAuthCode	# FAILED S1TC
+	C authenticates M on NxAuthCode		# Auth only if step 5 and 6 are amended
+	
+	# global agreement
+	# a authenticates M on Contract   			# FAILED S2TCD
+	# a weakly authenticates M on Contract   		# FAILED S1
+	a weakly authenticates C on Contract		# Proverif cannot Prove 		
+	# C authenticates a on Contract,NxAuthCode	# FAILED S1TC
+	C authenticates M on Contract					  
+	# C weakly authenticates a on Contract,NxAuthCode   # FAILED S1TC
+	# M authenticates C on Contract				# FAIL	
+	# M weakly authenticates C on Contract		# FAIL
+#	M weakly authenticates a on Contract			  # FAILED PROVERIF cannot prove - strong and weak
+#	M weakly authenticates a on Contract,NxAuthCode   # FAILED PROVERIF cannot prove - strong and weak
+
+	# secrets
+	# TID secret between C,M,a				 # FAILED S1TC	
+	# HOD secret between C,M,a				 # FAILED S1TC
+	OrderDesc secret between C,M
+	# PurchAmt secret between C,M,a			 # FAILED S1TC
+	# NxAuthCode secret between C,M,a		 # FAILED S1TC
+	# NxXID secret between C,M,a  			 # FAILED S1TC

@@ -1,0 +1,18 @@
+Protocol: Test_Inactive_Agent AnB
+
+Types:
+	Agent A,B,C;
+	Number NxA;
+	Function [Agent -> PublicKey] pk
+
+Knowledge:
+	A: A,B,C,pk(C),pk(B);
+	B: B,A,inv(pk(B)),pk(B);
+    C: inv(pk(C)),pk(C)
+
+Actions:
+	# C -> A: C
+	A -> B: {NxA,{NxA}pk(C),{NxA}pk(C)}pk(B)
+
+Goals:
+	A -> B: NxA

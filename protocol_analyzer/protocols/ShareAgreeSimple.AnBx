@@ -1,0 +1,16 @@
+Protocol: ShareAgreeSimple AnB
+
+Types:
+	Agent A,B;
+	Number NB;
+
+Knowledge:
+	A: A,B;
+	B: A,B;
+	A,B agree NB
+
+Actions:
+	A -> B: NB
+
+Goals:
+	NB secret between A,B

@@ -1,0 +1,17 @@
+Protocol: Insecure_Const AnB
+
+Types:
+	Agent A,B;
+	Number msg;
+	
+Knowledge:
+	A: A,B,msg;
+	B: B,A
+
+Actions:
+	A -> B: msg
+
+Goals:
+	A -> B: msg
+	A ->* B: msg		# This goal fails
+	# m secret between A,B

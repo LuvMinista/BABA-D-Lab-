@@ -1,0 +1,21 @@
+Protocol: MultiEncrypt AnB
+
+Types:
+    Agent A,B;
+    Number Msg,Nonce1,Nonce2,empty;
+    Function [Agent -> PublicKey] pk,sk
+
+Knowledge:
+    A: A,B,pk,sk,inv(pk(A)),inv(sk(A)),empty;
+    B: A,B,pk,sk,inv(pk(B)),inv(sk(B)),empty
+
+Actions:
+    A -> B: {Nonce1,B}pk(B)
+    B -> A: {Nonce1,A}pk(A)
+    A -> B: {Nonce2,B}pk(B)
+    B -> A: {Nonce2,A}pk(A)
+    
+Goals:
+
+   Nonce1 secret between A,B
+   Nonce2 secret between A,B

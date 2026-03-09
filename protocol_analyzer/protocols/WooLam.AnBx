@@ -1,0 +1,28 @@
+Protocol: WooLam AnB	
+
+# http://www.lsv.fr/Software/spore/wooLamPi.html
+# Author(s): Woo, Lam  (1994)
+# Summary: One way authentication protocol with public keys and trusted server, simplification of Woo and Lam Pi 3, Woo and Lam Pi 2, Woo and Lam Pi 1, and Woo and Lam Pi f. 
+
+Types:
+    Agent A,B,s;
+    Number NB;
+    Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+    A: A,B,s;
+    B: B,A,s;
+    s: A,B,s;
+    A,s share shk(A,s);
+    B,s share shk(B,s)
+    where A!=B	
+    
+Actions:
+    A -> B: A
+    B -> A: NB
+    A -> B: {|NB|}shk(A,s)
+    B -> s: {|A,{|NB|}shk(A,s)|}shk(B,s)
+    s -> B: {|NB|}shk(B,s)
+
+Goals:
+    B authenticates A on NB		# Fail

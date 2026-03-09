@@ -1,0 +1,28 @@
+Protocol: TMN AnB
+
+# Tatebayashi, M., Matsuzaki, N., Jr., D.B.N.
+# Key distribution protocol for digital mobile communication systems.
+# Advances in Cryptology - CRYPTO '89
+
+Types:
+	Agent A,B,s;
+	Number Ka,Kb,empty;
+	Function [Agent -> PublicKey] pk
+
+Knowledge:
+	A: A,B,s,pk(s),empty;
+	B: B,A,s,pk(s),empty;
+	s: A,B,pk(s),inv(pk(s)),empty
+
+Actions:
+	A -> s: {Ka}pk(s)
+	s -> B: empty
+	B -> s: {Kb}pk(s)
+	s -> A: xor(Ka,Kb)
+
+Goals:
+	Ka secret between A,s
+	Kb secret between A,B,s
+	A ->* s: Ka
+	B ->* s: Kb
+	

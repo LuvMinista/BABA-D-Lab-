@@ -1,0 +1,27 @@
+Protocol: KeyEx3 AnB
+# 3rd version: adding agent names into encryption
+# problem: agents can get confused about their roles
+
+Types:
+	Agent A,B,s;
+	SymmetricKey KAB;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+	A: A,B,s;
+	B: B,A,s;
+	s: A,B,s;
+	A,s share shk(A,s);
+	B,s share shk(B,s)
+
+Actions:
+	A -> s: A,B
+	# s creates key KAB
+	s -> A: {|KAB,B|}shk(A,s),{|KAB,A|}shk(B,s)
+	A -> B: {|KAB,A|}shk(B,s)
+
+Goals:
+	A authenticates s on KAB,B
+	B authenticates s on KAB,A
+	KAB secret between A,B,s
+

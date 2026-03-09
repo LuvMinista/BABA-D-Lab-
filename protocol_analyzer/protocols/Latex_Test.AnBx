@@ -1,0 +1,18 @@
+Protocol: Latex_Test
+
+Types:
+	Agent A,B;
+	Certified A,B;
+	Number Msg,N
+
+Knowledge:
+	A: A,B;
+	B: B,A
+
+Actions:
+	A -> B: N
+	B -> A,@(B|A|A): N
+	A *->* B: N,Msg
+
+Goals:
+	A -> B: N	

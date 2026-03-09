@@ -1,0 +1,20 @@
+Protocol: ISOCCFTwoPassUnilateralAuthProt AnB # Verified
+
+Types:
+    Agent A,B;
+    Number NB,Text1,Text2,Text3;
+    Function [SymmetricKey,Number,Agent,Number ->* Number] f;
+    Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+    A: A,B,f;
+    B: B,A,f;
+    A,B share shk(A,B)
+    
+Actions:
+    B->A: NB
+    A->B: f(shk(A,B),NB,B,Text2),NB,B,Text2
+
+Goals:
+    A *-> B: Text2
+

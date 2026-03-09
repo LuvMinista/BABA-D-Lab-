@@ -1,0 +1,21 @@
+Protocol: NonReversible AnB# Verified & Certified
+
+Types: Agent A,B;
+       Number NxA,NxB;
+       SymmetricKey KxK,KxskAB;
+	   Function [Agent,Agent ->* SymmetricKey] shk;
+       Function [Number -> Number ] f
+
+Knowledge: 
+		A: A,B,f;
+		B: B,A,f;
+		A,B share shk(A,B)
+
+Actions:
+		B -> A: B,NxB
+		A -> B: A,{|f(NxB),NxA,A,KxK|}shk(A,B)
+		B -> A: B,{|f(NxA)|}KxK
+
+Goals:
+		A *->* B: NxA
+		B *-> A: NxB

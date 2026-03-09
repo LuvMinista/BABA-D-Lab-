@@ -1,0 +1,36 @@
+Protocol: KeyEx4 AnB
+# 4th version: adding a challenge-response at the end
+# this is close to the Needham-Schroeder Shared-Key Protocol (NSshk)
+# Problem: if a key is broken, the challenge-response can still be replayed
+# OFMC finds a replay attack in case of a dishonest A (not very interesting)
+
+# AnBx: Proverif compile with -pvtagfuntt option for full verification of all goals
+# no longer needed
+
+Types:
+	Agent A,B,s;
+	Number NA,NB;
+	SymmetricKey KAB;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+	A: A,B,s,pre;
+	B: B,A,s,pre;
+	s: A,B,s,pre;
+	A,s share shk(A,s);
+	B,s share shk(B,s)
+
+Actions:
+	A -> s: A,B
+	# s creates key KAB
+	s -> A: {|KAB,A,B|}shk(A,s), {|KAB,A,B|}shk(B,s)
+	A -> B: {|KAB,A,B|}shk(B,s)
+	B -> A: {|NB|}KAB
+	A -> B: {|pre(NB)|}KAB
+
+Goals:
+	A authenticates s on KAB,B
+	B authenticates s on KAB,A
+	KAB secret between A,B,s
+	

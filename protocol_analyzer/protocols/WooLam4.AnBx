@@ -1,0 +1,26 @@
+Protocol: WooLam4 AnB
+
+# same as WooLam (SPORE)
+# "final" (and worst) 
+
+Types:
+	Agent A,B,s;
+	Number NA,NB;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+    A: A,B,s;
+    B: B,A,s;
+    s: A,B,s;
+    A,s share shk(A,s);
+    B,s share shk(B,s)
+
+Actions:
+	A -> B: A
+	B -> A: NB
+	A -> B: {|NB|}shk(A,s)
+	B -> s: {|A,{|NB|}shk(A,s)|}shk(B,s)
+	s -> B: {|NB|}shk(B,s)
+
+Goals:
+	B authenticates A on NB

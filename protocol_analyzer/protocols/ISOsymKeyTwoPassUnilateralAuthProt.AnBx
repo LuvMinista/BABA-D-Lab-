@@ -1,0 +1,18 @@
+Protocol: ISOsymKeyTwoPassUnilateralAuthProt AnB # Verified & Certified
+
+Types: 
+	Agent A,B;
+    Number NB,Text1,Text2,Text3;
+    Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge: 
+    A: A,B;
+    B: B,A;
+    A,B share shk(A,B)
+
+Actions:
+	B->A: NB
+	A->B: {|NB,B,Text2|}shk(A,B)
+
+Goals:
+	A *-> B: Text2

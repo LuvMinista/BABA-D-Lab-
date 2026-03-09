@@ -1,0 +1,36 @@
+Protocol: WL92 AnB # WooLam92
+
+# Protocol from Woo and Lam, has stupid attacks if B=s or A=B is allowed.
+# Also the original version has the problem that in the signed message from the server, the name of A is not mentioned which leads to a secrecy problem
+# with a parallel session attack. Here the fixed version and the bugged one in comments.
+
+Types:
+	Agent A,B,s;
+	Number NxNA,NxNB;
+	Symmetric_key KxKS;
+	Function [Agent -> PublicKey] pk,sk;
+
+Knowledge:
+	A: A,pk(A),inv(pk(A)),s,sk(s),B;
+	B: A,B,pk(B),inv(pk(B)),s,sk(s),pk(s);
+	s: s,A,B,pk(A),pk(B),pk(s),inv(pk(s)),sk(s),inv(sk(s))
+	where B!=s, A!=B
+
+Actions:
+	A -> s: A,B
+	s -> A: {B,pk(B)}(inv(sk(s)))
+	A -> B: {NxNA,A}(pk(B))
+	B -> s: A,B,{NxNA}pk(s)
+
+	# Fixed version; for the bugged version replace the following two lines:
+	s -> B: {A,pk(A)}(inv(sk(s))), {{NxNA,KxKS,B,A}inv(sk(s))}pk(B)
+	B -> A: {{NxNA,KxKS,B,A}inv(sk(s)),NxNB}pk(A)
+	# with these two commented lines:
+	# s -> B: {A,pk(A)}(inv(sk(s))),{{NxNA,KxKS,B}inv(sk(s))}pk(B)
+	# B -> A: {{NxNA,KxKS,B}inv(sk(s)),NxNB}pk(A)
+	A -> B: {|NxNB|}KxKS
+
+Goals:
+	A authenticates s on KxKS,B
+	B authenticates s on KxKS,A
+	KxKS secret between A,B,s

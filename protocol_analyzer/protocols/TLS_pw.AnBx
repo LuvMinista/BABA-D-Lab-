@@ -1,0 +1,45 @@
+Protocol: TLS_pw AnB # Bounded-verified
+
+# variant without client certificate
+# and using a guessable password to authenticate the client
+
+# AnBx: the AnBx model requires some changes in order to generate a runnable Java model
+# 1) initialisation phase (certificate requests/issues) 
+#    must be explicit, in order to have an active server (s)
+#    when generating the Java implementation
+# 2) clientK,serverK must be implemented explicitly in the Functions.st template file
+
+Types: 
+    Agent A,B,s;
+    Number NA,NB,Sid,PA,PB,PMS,empty;
+    Function [Agent -> PublicKey] pk,sk;
+    Function [Untyped -> Hash] hash;
+    Function [Number,Number,Number -> SymmetricKey] prf;
+    Function [Number,Number,SymmetricKey -> SymmetricKey] clientK,serverK;
+    Function [Agent,Agent ->* SymmetricKey] pw
+    
+Knowledge:
+    A: A,sk(s),B,hash,clientK,serverK,prf;
+    B: s,B,A,pk(B),sk(s),inv(pk(B)),hash,clientK,serverK,prf,empty;
+    s: s,B,sk,pk,sk(s),inv(sk(s));
+    A,B share pw(A,B)
+    
+Actions:
+    # protocol setup - certificate issue
+	s *->* B: {B,pk(B)}inv(sk(s))
+	B -> A: empty
+	
+    # protocol run
+    A -> B: A,NA,Sid,PA
+    B -> A: NB,Sid,PB,
+            {B,pk(B)}inv(sk(s))
+    A -> B: {PMS}pk(B),
+            hash(NB,B,PMS),
+            {|hash(prf(PMS,NA,NB),A,B,NA,NB,Sid,PA,PB,PMS)|}pw(A,B)
+    B -> A: {|hash(prf(PMS,NA,NB),A,B,NA,NB,Sid,PA,PB,PMS)|}serverK(NA,NB,prf(PMS,NA,NB))
+        
+Goals:
+    B authenticates A on prf(PMS,NA,NB)
+    A authenticates B on prf(PMS,NA,NB)
+    prf(PMS,NA,NB) secret between A,B
+    pw(A,B) guessable secret between A,B

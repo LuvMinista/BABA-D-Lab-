@@ -1,0 +1,23 @@
+Protocol: TypeConv AnB
+
+Types:
+	Agent A,B;
+	Number Msg1,Msg2;
+	IntNum Msg3,Msg4;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge:
+	A: A,B;
+	B: B,A;
+	A,B share shk(A,B)
+
+Actions:
+	A -> B: {|Msg1,{|Msg3|}shk(A,B)|}shk(A,B)
+	B -> A : {|Msg1|}shk(A,B),Msg1,Msg3
+
+Goals:
+	Msg1 secret between A,B
+	Msg3 secret between A,B
+	A ->* B: Msg1
+	A ->* B: Msg3
+	

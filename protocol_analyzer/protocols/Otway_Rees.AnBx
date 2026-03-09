@@ -1,0 +1,30 @@
+Protocol: Otway_Rees AnB 
+
+# has a type-flaw attack in the --untyped model
+# in the typed model, there is a relatively stupid replay attack if A=B is allowed
+# we exclude this by A!=B
+
+Types: 
+	Agent A,B,s;
+    Number NxM,NxA,NxB;
+    SymmetricKey KxKAB;
+    Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge: 	
+	A: A,B,s;
+	B: B,A,s;
+	s: A,B,s;
+	A,s share shk(A,s);
+	B,s share shk(B,s)
+	where A!=B
+	
+Actions:
+	A -> B: NxM,A,B,{|NxA,NxM,A,B|}shk(A,s)
+	B -> s: NxM,A,B,{|NxA,NxM,A,B|}shk(A,s),{|NxB,NxM,A,B|}shk(B,s)
+	s -> B: NxM,{|NxA,KxKAB|}shk(A,s),{|NxB,KxKAB|}shk(B,s)
+	B -> A: NxM,{|NxA,KxKAB|}shk(A,s)
+	
+Goals:
+	KxKAB secret between A,B,s
+    B authenticates s on KxKAB     # fails in S2 when where A!=B is commented out
+    A authenticates s on KxKAB

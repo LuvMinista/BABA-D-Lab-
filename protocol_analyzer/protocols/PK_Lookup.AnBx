@@ -1,0 +1,17 @@
+Protocol: PK_Lookup AnB
+
+Types:
+	Agent A,B;
+	Number Msg;
+	Function [Agent -> PublicKey] pk
+	
+Knowledge:
+	A: A,B,inv(pk(A));
+	B: B,pk
+
+Actions:
+	A -> B: A
+	B -> A: {Msg}pk(A)
+
+Goals:
+	B ->* A: Msg

@@ -1,0 +1,35 @@
+Protocol: ISOpubKeyTwoPassMutualAuthProt AnB 
+
+# The original protocol has a reflection attack that we correct 
+# by a tag in the first message (A->B) of the protocol run
+
+# https://people.cispa.io/cas.cremers/downloads/papers/BCM2012-iso9798.pdf
+
+# AnBx: the AnBx model requires some changes in order to generate a runnable Java model
+# initialisation phase (certificate request/issue) 
+# must be explicit, in order to have an active server (s)
+
+Types:
+	Agent A,B,s;
+	Number NxNA,NxNB,Text1,Text2,Text3,Text4,tag,empty;
+	Function [Agent -> PublicKey] sk;
+
+Knowledge:
+	A: A,B,s,sk(A),inv(sk(A)),sk(s),tag,empty;
+	B: B,A,s,sk(B),inv(sk(B)),sk(s),tag,empty;
+	s: A,B,s,sk(s),inv(sk(s)),sk(A),sk(B),empty
+
+Actions:
+	# initial knowledge
+	s -> A: {A,sk(A)}inv(sk(s))
+	A -> s: empty
+	s -> B: {B,sk(B)}inv(sk(s))
+	B -> A: empty
+	# protocol run
+	A -> B: {A,sk(A)}inv(sk(s)),{NxNA,B,Text1}inv(sk(A))
+	B -> A: {B,sk(B)}inv(sk(s)),{NxNB,A,Text3}inv(sk(B))
+
+Goals:
+	B weakly authenticates A on Text1
+	A weakly authenticates B on Text3
+

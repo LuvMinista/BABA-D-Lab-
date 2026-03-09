@@ -1,0 +1,19 @@
+Protocol: NSL AnB # Verified & Certified
+
+Types:
+    Agent A,B;
+    Number NxNA,NxNB;
+    Function [Agent -> PublicKey] pk;
+
+Knowledge:
+    A: A,pk,inv(pk(A)),B;
+    B: B,pk,inv(pk(B)),A
+
+Actions:
+    A->B: {NxNA,A}(pk(B))
+    B->A: {NxNA,NxNB,B}(pk(A))
+    A->B: {NxNB}(pk(B))
+
+Goals:
+    A *->* B: NxNA
+    B *->* A: NxNB

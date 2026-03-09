@@ -1,0 +1,29 @@
+Protocol: ISOpubKeyTwoPassUnilateralAuthProt AnB # Verified
+
+# AnBx: the AnBx model required some changes in order to generate a runnable Java model
+# initialisation phase (certificate request/issue) 
+# must be explicit, in order to have an active server (s)
+
+Types: 
+	Agent A,B,s;
+    Number RA,RB,Text1,Text2,Text3,empty;
+    Function [Agent -> PublicKey] sk;
+
+Knowledge:
+	A: A,B,s,sk(s),sk(A),inv(sk(A)),empty;
+	B: B,s,sk(s);
+	s: s,sk(s),inv(sk(s))
+
+Actions:
+    # protocol setup s issues a certificate to A 
+    A -> s: A,sk(A)
+	s -> A: {A,sk(A)}inv(sk(s))
+	# sync message
+	A -> B: empty
+	# protocol run
+	B -> A: RB
+	A -> B: {A,sk(A)}inv(sk(s)),{RA,RB,B,Text2}inv(sk(A))
+
+Goals:
+	A *-> B: Text2
+	# B weakly authenticates A on Text2

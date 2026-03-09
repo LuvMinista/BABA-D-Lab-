@@ -1,0 +1,23 @@
+Protocol: WMF AnB 
+
+Types: 
+	Agent A,B,s;
+	Number Msg,empty;
+	SymmetricKey KxKAB;
+	Function [Agent,Agent ->* SymmetricKey] shk
+
+Knowledge: 	
+	A: A,B,s,empty;
+	B: B,A,s,empty;
+	s: A,B,s,empty;
+	A,s share shk(A,s);
+	B,s share shk(B,s)
+
+Actions:
+	A -> s: A,{|B,KxKAB|}shk(A,s)
+	s -> B: {|A,B,KxKAB|}shk(B,s)
+	B -> A: empty
+	A -> B: {|Msg|}KxKAB
+
+Goals:
+	Msg secret between A,B

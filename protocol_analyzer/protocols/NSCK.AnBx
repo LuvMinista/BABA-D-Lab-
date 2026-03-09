@@ -1,0 +1,38 @@
+Protocol: NSCK AnB 
+
+# Needham Schroeder with Conventional Keys # Verified & Certified
+# The protocol suffers from a replay attack (see also amended NSCK and
+# Denning Sacco). We verify here that it satisfies weak authentication
+# and secrecy.  Note that, due to the formulation of goals in the
+# abstractions, we cannot formulate goals directly with respect to the
+# key KAB here.
+
+# AnBx to Proverif: compile with -pvtagfuntt option for full verification of all goals
+
+
+Types:
+    Agent A,B,s;
+    Number NA,NB,NB2;
+    SymmetricKey KAB;
+    Function [Agent,Agent ->* SymmetricKey] shk;
+    Function [Number -> Number] pre;
+    
+Knowledge:
+    A: A,B,s,pre;
+    B: B,A,s,pre;
+    s: A,B,s,pre;
+    A,s share shk(A,s);
+    B,s share shk(B,s)
+
+Actions:
+    A -> s: A,B,NA
+    s -> A: {|NA,B,KAB,{|KAB,A|}shk(B,s)|}shk(A,s)
+    A -> B: {|KAB,A|}shk(B,s)
+    B -> A: {|NB|}KAB
+    A -> B: {|pre(NB)|}KAB
+
+Goals:
+    B *->* A: NB
+    B weakly authenticates A on NB
+    A authenticates s on KAB
+    B authenticates s on KAB    # fails 2 sessions
