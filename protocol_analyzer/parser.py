@@ -1,5 +1,19 @@
 """
 Parses and validates the structured JSON response from LLM providers.
+
+Expected LLM response schema
+-----------------------------
+{
+  "goals": [
+    {
+      "attack":       "ATTACK" | "NO_ATTACK" | "unknown",
+      "number_goals": 1 or 1,
+      "goal":         "<goal description>"
+    },
+    ...
+  ]
+}
+
 Falls back gracefully when the LLM returns malformed JSON.
 """
 
@@ -8,13 +22,7 @@ import re
 from typing import Optional
 
 
-REQUIRED_TOP_LEVEL_KEYS = {
-    "protocol_summary",
-    "security_properties",
-    "vulnerabilities",
-    "formal_verification_hints",
-    "overall_assessment",
-}
+VALID_ATTACK_VALUES = {"ATTACK", "NO_ATTACK", "UNKNOWN"}   # checked case-insensitively
 
 
 def parse_response(raw_content: str) -> dict:
@@ -22,15 +30,16 @@ def parse_response(raw_content: str) -> dict:
     Attempt to parse the LLM's raw text output into a validated dict.
 
     Returns a dict with:
-        - "parsed"  : dict | None   (the parsed JSON, or None on failure)
-        - "valid"   : bool          (True if all required keys present)
-        - "issues"  : list[str]     (any parse or schema warnings)
-        - "raw"     : str           (original LLM text for audit)
+        "parsed"  : dict | None   – the parsed + normalised JSON, or None on failure
+        "valid"   : bool          – True only when schema is fully correct
+        "issues"  : list[str]     – any parse or schema warnings
+        "raw"     : str           – original LLM text for audit
     """
     issues = []
 
     if not raw_content:
-        return {"parsed": None, "valid": False, "issues": ["Empty response from LLM"], "raw": ""}
+        return {"parsed": None, "valid": False,
+                "issues": ["Empty response from LLM"], "raw": ""}
 
     # 1. Try direct parse
     parsed = _try_json_parse(raw_content)
@@ -48,14 +57,64 @@ def parse_response(raw_content: str) -> dict:
         issues.append("Could not parse JSON from LLM response.")
         return {"parsed": None, "valid": False, "issues": issues, "raw": raw_content}
 
-    # 4. Schema validation
-    missing = REQUIRED_TOP_LEVEL_KEYS - set(parsed.keys())
-    if missing:
-        issues.append(f"Missing required keys: {missing}")
+    # 4. Top-level schema: must have "goals" key
+    if "goals" not in parsed:
+        issues.append('Missing required top-level key: "goals".')
+        return {"parsed": parsed, "valid": False, "issues": issues, "raw": raw_content}
+
+    if not isinstance(parsed["goals"], list):
+        issues.append('"goals" must be a JSON array.')
+        return {"parsed": parsed, "valid": False, "issues": issues, "raw": raw_content}
+
+    # 5. Per-entry validation + normalisation
+    entry_issues = []
+    for idx, entry in enumerate(parsed["goals"]):
+        tag = f"goals[{idx}]"
+
+        if not isinstance(entry, dict):
+            entry_issues.append(f"{tag}: entry is not an object.")
+            continue
+
+        # ── attack ────────────────────────────────────────────────────────────
+        if "attack" not in entry:
+            entry_issues.append(f'{tag}: missing "attack" field.')
+        else:
+            val = str(entry["attack"]).strip().upper()
+            if val not in VALID_ATTACK_VALUES:
+                entry_issues.append(
+                    f'{tag}: "attack" value "{entry["attack"]}" is not one of '
+                    f'ATTACK | NO_ATTACK | unknown.'
+                )
+            else:
+                # Normalise to uppercase for consistent downstream handling
+                entry["attack"] = val
+
+        # ── number_goals ──────────────────────────────────────────────────────
+        if "number_goals" not in entry:
+            entry_issues.append(f'{tag}: missing "number_goals" field.')
+        else:
+            try:
+                entry["number_goals"] = int(entry["number_goals"])
+            except (TypeError, ValueError):
+                entry_issues.append(
+                    f'{tag}: "number_goals" is not an integer: {entry["number_goals"]!r}.'
+                )
+
+        # ── goal ─────────────────────────────────────────────────────────────
+        if "goal" not in entry:
+            entry_issues.append(f'{tag}: missing "goal" field.')
+        else:
+            entry["goal"] = str(entry["goal"]).strip()
+
+    issues.extend(entry_issues)
+
+    if entry_issues:
         return {"parsed": parsed, "valid": False, "issues": issues, "raw": raw_content}
 
     return {"parsed": parsed, "valid": True, "issues": issues, "raw": raw_content}
 
+
+# ── Internal helpers ──────────────────────────────────────────────────────────
 
 def _try_json_parse(text: str) -> Optional[dict]:
     try:
