@@ -85,6 +85,7 @@ def export_results(results: List[dict], output_dir: str = "results") -> dict:
                 row["llm_attack"]       = goal_entry.get("attack", "")
                 row["llm_number_goals"] = goal_entry.get("number_goals", "")
                 row["llm_goal"]         = goal_entry.get("goal", "")
+                row["llm_reasoning"]    = goal_entry.get("reasoning", "")
                 # ── OFMC ground truth (paired by index) ───────────────────────
                 row["ofmc_attack"]       = ofmc_match.get("attack", "")
                 row["ofmc_number_goals"] = ofmc_match.get("number_goals", "")
@@ -98,6 +99,7 @@ def export_results(results: List[dict], output_dir: str = "results") -> dict:
             row["llm_attack"]        = ""
             row["llm_number_goals"]  = ""
             row["llm_goal"]          = ""
+            row["llm_reasoning"]     = ""
             row["ofmc_attack"]       = ""
             row["ofmc_number_goals"] = ""
             row["ofmc_goal"]         = ""
@@ -123,18 +125,21 @@ def _build_base_columns(r: dict) -> dict:
     """Columns that are the same for every goal row within one result."""
     return {
         # ── Identification ────────────────────────────────────────────────────
-        "timestamp":      r.get("timestamp", ""),
-        "protocol_file":  r.get("protocol_file", ""),
-        "protocol_name":  r.get("protocol_name", ""),
-        "provider":       r.get("provider", ""),
-        "model":          r.get("model", ""),
-        "tokens_used":    r.get("tokens_used", 0),
+        "timestamp":        r.get("timestamp", ""),
+        "start_time":       r.get("start_time", ""),
+        "end_time":         r.get("end_time", ""),
+        "duration_seconds": r.get("duration_seconds", ""),
+        "protocol_file":    r.get("protocol_file", ""),
+        "protocol_name":    r.get("protocol_name", ""),
+        "provider":         r.get("provider", ""),
+        "model":            r.get("model", ""),
+        "tokens_used":      r.get("tokens_used", 0),
         # ── Full protocol source (unmodified) ─────────────────────────────────
-        "full_protocol":  r.get("full_protocol", ""),
+        "full_protocol":    r.get("full_protocol", ""),
         # ── Parse health ──────────────────────────────────────────────────────
-        "parse_valid":    r.get("parse_valid", False),
-        "parse_issues":   "; ".join(r.get("parse_issues", [])),
-        "api_error":      r.get("api_error", "") or "",
+        "parse_valid":      r.get("parse_valid", False),
+        "parse_issues":     "; ".join(r.get("parse_issues", [])),
+        "api_error":        r.get("api_error", "") or "",
         # ── Total goal counts (summary) ───────────────────────────────────────
         "llm_total_goals":  len(_extract_llm_goals(r)),
         "ofmc_total_goals": len(r.get("ofmc_results", [])),
