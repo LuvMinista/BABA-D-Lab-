@@ -106,6 +106,10 @@ def parse_response(raw_content: str) -> dict:
         else:
             entry["goal"] = str(entry["goal"]).strip()
 
+        # ── reasoning ────────────────────────────────────────────────────────
+        # Optional field — normalise to a string if present, default to "" if absent.
+        entry["reasoning"] = str(entry.get("reasoning") or "").strip()
+
     issues.extend(entry_issues)
 
     if entry_issues:
