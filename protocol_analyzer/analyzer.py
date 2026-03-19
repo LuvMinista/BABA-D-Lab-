@@ -175,8 +175,11 @@ def analyze_protocol(provider, protocol: dict) -> dict:
     print(f"    → Sending to {provider.provider_name} ({provider.model})…",
           end=" ", flush=True)
 
+    start_time = datetime.now()
     raw_response = provider.analyze(user_prompt, system_prompt)
-    return _build_result(protocol, raw_response)
+    end_time = datetime.now()
+
+    return _build_result(protocol, raw_response, start_time=start_time, end_time=end_time)
 
 
 # ── Batch analysis (Anthropic and any future batch-capable provider) ──────────
@@ -201,12 +204,17 @@ def analyze_protocols_batch(provider, protocols: List[dict]) -> List[dict]:
     print(f"\n  ⚡ Using Batch API for {provider.provider_name} "
           f"({len(protocols)} protocol(s))…")
 
+    start_time = datetime.now()
     raw_responses = provider.analyze_batch(batch_requests)
+    end_time = datetime.now()
+    # Distribute the total batch duration evenly across all protocols
+    total_duration = (end_time - start_time).total_seconds()
+    per_protocol_duration = total_duration / max(len(protocols), 1)
 
     response_map = {r["custom_id"]: r for r in raw_responses}
 
     results = []
-    for protocol in protocols:
+    for i, protocol in enumerate(protocols):
         raw = response_map.get(protocol["file"])
         if raw is None:
             raw = {
@@ -215,7 +223,10 @@ def analyze_protocols_batch(provider, protocols: List[dict]) -> List[dict]:
                 "tokens_used": 0,
                 "error": "Missing from batch response",
             }
-        result = _build_result(protocol, raw)
+        # Assign each protocol a proportional slice of the batch window
+        p_start = start_time + __import__('datetime').timedelta(seconds=i * per_protocol_duration)
+        p_end   = p_start    + __import__('datetime').timedelta(seconds=per_protocol_duration)
+        result = _build_result(protocol, raw, start_time=p_start, end_time=p_end)
         _print_result_summary(protocol, result)
         results.append(result)
 
@@ -224,7 +235,8 @@ def analyze_protocols_batch(provider, protocols: List[dict]) -> List[dict]:
 
 # ── Shared result builder ─────────────────────────────────────────────────────
 
-def _build_result(protocol: dict, raw_response: dict) -> dict:
+def _build_result(protocol: dict, raw_response: dict,
+                  start_time=None, end_time=None) -> dict:
     """
     Assemble a standardised result record from a raw provider response.
 
@@ -232,9 +244,19 @@ def _build_result(protocol: dict, raw_response: dict) -> dict:
         protocol_name        – human-readable name (NOT sent to LLM)
         full_protocol        – complete, unmodified protocol text
         ofmc_results         – list of OFMC verdict dicts
+        start_time           – ISO-8601 timestamp when the API call began
+        end_time             – ISO-8601 timestamp when the API call returned
+        duration_seconds     – wall-clock seconds for the API call
     """
+    now = datetime.now()
+    _start = start_time or now
+    _end   = end_time   or now
+
     result = {
-        "timestamp":          datetime.now().isoformat(),
+        "timestamp":          now.isoformat(),
+        "start_time":         _start.isoformat(),
+        "end_time":           _end.isoformat(),
+        "duration_seconds":   round((_end - _start).total_seconds(), 3),
         "protocol_file":      protocol["file"],
         "protocol_name":      protocol.get("protocol_name", ""),
         "full_protocol":      protocol.get("content", ""),
