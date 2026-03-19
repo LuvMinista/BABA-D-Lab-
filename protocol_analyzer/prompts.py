@@ -54,7 +54,8 @@ JSON SCHEMA:
     {{
       "attack":       "<ATTACK | NO_ATTACK | unknown>",
       "number_goals": 0 or 1,  # must be 1 for every entry; never counts >1
-      "goal":         "<copy the exact goal line verbatim from the protocol, e.g. 'B authenticates A on NB'>"
+      "goal":         "<copy the exact goal line verbatim from the protocol, e.g. 'B authenticates A on NB'>",
+      "reasoning":    "<concise technical explanation of WHY this verdict was reached — cite the specific protocol step, message flow, or cryptographic weakness that leads to the attack or confirms the goal holds>"
     }}
   ]
 }}
@@ -71,6 +72,12 @@ Rules for the "goals" array:
                  description.  Use an empty string only when the specification contains
                  no goal text at all (this should be extremely rare). The goal is to get
                  the line that make this protocol to be an attack or no-attack, so the LLM should copy it verbatim.
+- "reasoning"    must be a concise but technically precise explanation of the verdict.
+                 For ATTACK: describe the attack trace (e.g. which agent is impersonated,
+                 which message is replayed/intercepted, and what the intruder learns or forges).
+                 For NO_ATTACK: explain why the cryptographic construction prevents any
+                 attack (e.g. freshness guarantee, key binding, nonce usage).
+                 For unknown: state what information is missing to decide.
  
 
 Cryptographic Primitives
