@@ -1,0 +1,277 @@
+timestamp,start_time,end_time,duration_seconds,protocol_file,protocol_name,provider,model,tokens_used,full_protocol,parse_valid,parse_issues,api_error,llm_total_goals,ofmc_total_goals,llm_goal_index,llm_attack,llm_number_goals,llm_goal,llm_reasoning,ofmc_attack,ofmc_number_goals,ofmc_goal,ofmc_all_verdicts
+2026-05-12T09:36:17.531131,2026-05-12T09:33:52.687613,2026-05-12T09:36:17.531118,144.844,Amended_NSCK_AnB.AnBx,jg3ycd92mwnr AnB,DeepSeek,deepseek-reasoner,8371,"Protocol: jg3ycd92mwnr AnB
+
+Types:
+	Agent A1,A2,a3;
+	Number N4,N5,N6;
+	Symmetric_key K7;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+
+Knowledge:
+	A1: A1,A2,a3,pre,shk(A1,a3);
+	A2: A2,A1,a3,pre,shk(A2,a3);
+	a3: A1,A2,a3,shk(A1,a3),shk(A2,a3);
+	A1,a3 share shk(A1,a3);
+	A2,a3 share shk(A2,a3)
+
+Actions:
+	A1 -> A2: A1
+	A2 -> A1: {|A1,N6|}shk(A2,a3)
+	A1 -> a3: A1,A2,N4,{|A1,N6|}shk(A2,a3)
+	a3 -> A1: {|N4,A2,K7,{|K7,N6,A1|}shk(A2,a3)|}shk(A1,a3)
+	A1 -> A2: {|K7,N6,A1|}shk(A2,a3)
+	A2 -> A1: {|N5|}K7
+	A1 -> A2: {|pre(N5)|}K7
+
+Goals:
+	A1 authenticates A2 on N5
+	A2 authenticates A1 on N5
+	N5 secret between A1,A2
+	A2 *->* A1: N5
+	A1 authenticates a3 on K7
+	A2 authenticates a3 on K7
+",True,,,6,6,0,NO_ATTACK,1,A1 authenticates A2 on N5,"The protocol establishes a fresh symmetric key K7 distributed via a trusted server a3. A2 proves knowledge of K7 by encrypting N5 and pre(N5) with K7. Only A2 can decrypt the token {|K7,N6,A1|}shk(A2,a3) to obtain K7, so A1 can infer the other party is A2. Freshness is assured by N6 used in the token. No replay or man-in-the-middle attack is possible because the intruder lacks the necessary keys.",NO_ATTACK,1,A authenticates B on NxNB,"NO_ATTACK:A authenticates B on NxNB | NO_ATTACK:B authenticates A on NxNB | NO_ATTACK:NxNB secret between A,B | NO_ATTACK:B *->* A: NxNB | NO_ATTACK:A authenticates s on KxKAB | NO_ATTACK:B authenticates s on KxKAB"
+2026-05-12T09:36:17.531131,2026-05-12T09:33:52.687613,2026-05-12T09:36:17.531118,144.844,Amended_NSCK_AnB.AnBx,jg3ycd92mwnr AnB,DeepSeek,deepseek-reasoner,8371,"Protocol: jg3ycd92mwnr AnB
+
+Types:
+	Agent A1,A2,a3;
+	Number N4,N5,N6;
+	Symmetric_key K7;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+
+Knowledge:
+	A1: A1,A2,a3,pre,shk(A1,a3);
+	A2: A2,A1,a3,pre,shk(A2,a3);
+	a3: A1,A2,a3,shk(A1,a3),shk(A2,a3);
+	A1,a3 share shk(A1,a3);
+	A2,a3 share shk(A2,a3)
+
+Actions:
+	A1 -> A2: A1
+	A2 -> A1: {|A1,N6|}shk(A2,a3)
+	A1 -> a3: A1,A2,N4,{|A1,N6|}shk(A2,a3)
+	a3 -> A1: {|N4,A2,K7,{|K7,N6,A1|}shk(A2,a3)|}shk(A1,a3)
+	A1 -> A2: {|K7,N6,A1|}shk(A2,a3)
+	A2 -> A1: {|N5|}K7
+	A1 -> A2: {|pre(N5)|}K7
+
+Goals:
+	A1 authenticates A2 on N5
+	A2 authenticates A1 on N5
+	N5 secret between A1,A2
+	A2 *->* A1: N5
+	A1 authenticates a3 on K7
+	A2 authenticates a3 on K7
+",True,,,6,6,1,NO_ATTACK,1,A2 authenticates A1 on N5,"A2 receives {|pre(N5)|}K7 from A1. Since only A1 and a3 know shk(A1,a3), only A1 could have decrypted the message from a3 containing K7. A2’s own N6 is embedded in the token to ensure freshness. The absence of key compromise prevents impersonation.",NO_ATTACK,1,B authenticates A on NxNB,"NO_ATTACK:A authenticates B on NxNB | NO_ATTACK:B authenticates A on NxNB | NO_ATTACK:NxNB secret between A,B | NO_ATTACK:B *->* A: NxNB | NO_ATTACK:A authenticates s on KxKAB | NO_ATTACK:B authenticates s on KxKAB"
+2026-05-12T09:36:17.531131,2026-05-12T09:33:52.687613,2026-05-12T09:36:17.531118,144.844,Amended_NSCK_AnB.AnBx,jg3ycd92mwnr AnB,DeepSeek,deepseek-reasoner,8371,"Protocol: jg3ycd92mwnr AnB
+
+Types:
+	Agent A1,A2,a3;
+	Number N4,N5,N6;
+	Symmetric_key K7;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+
+Knowledge:
+	A1: A1,A2,a3,pre,shk(A1,a3);
+	A2: A2,A1,a3,pre,shk(A2,a3);
+	a3: A1,A2,a3,shk(A1,a3),shk(A2,a3);
+	A1,a3 share shk(A1,a3);
+	A2,a3 share shk(A2,a3)
+
+Actions:
+	A1 -> A2: A1
+	A2 -> A1: {|A1,N6|}shk(A2,a3)
+	A1 -> a3: A1,A2,N4,{|A1,N6|}shk(A2,a3)
+	a3 -> A1: {|N4,A2,K7,{|K7,N6,A1|}shk(A2,a3)|}shk(A1,a3)
+	A1 -> A2: {|K7,N6,A1|}shk(A2,a3)
+	A2 -> A1: {|N5|}K7
+	A1 -> A2: {|pre(N5)|}K7
+
+Goals:
+	A1 authenticates A2 on N5
+	A2 authenticates A1 on N5
+	N5 secret between A1,A2
+	A2 *->* A1: N5
+	A1 authenticates a3 on K7
+	A2 authenticates a3 on K7
+",True,,,6,6,2,NO_ATTACK,1,"N5 secret between A1,A2","N5 is transmitted only under encryption with K7 (messages 6 and 7). K7 is only ever sent under the long-term symmetric keys shk(A1,a3) and shk(A2,a3), which the intruder does not possess. Therefore, the intruder cannot learn N5.",NO_ATTACK,1,"NxNB secret between A,B","NO_ATTACK:A authenticates B on NxNB | NO_ATTACK:B authenticates A on NxNB | NO_ATTACK:NxNB secret between A,B | NO_ATTACK:B *->* A: NxNB | NO_ATTACK:A authenticates s on KxKAB | NO_ATTACK:B authenticates s on KxKAB"
+2026-05-12T09:36:17.531131,2026-05-12T09:33:52.687613,2026-05-12T09:36:17.531118,144.844,Amended_NSCK_AnB.AnBx,jg3ycd92mwnr AnB,DeepSeek,deepseek-reasoner,8371,"Protocol: jg3ycd92mwnr AnB
+
+Types:
+	Agent A1,A2,a3;
+	Number N4,N5,N6;
+	Symmetric_key K7;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+
+Knowledge:
+	A1: A1,A2,a3,pre,shk(A1,a3);
+	A2: A2,A1,a3,pre,shk(A2,a3);
+	a3: A1,A2,a3,shk(A1,a3),shk(A2,a3);
+	A1,a3 share shk(A1,a3);
+	A2,a3 share shk(A2,a3)
+
+Actions:
+	A1 -> A2: A1
+	A2 -> A1: {|A1,N6|}shk(A2,a3)
+	A1 -> a3: A1,A2,N4,{|A1,N6|}shk(A2,a3)
+	a3 -> A1: {|N4,A2,K7,{|K7,N6,A1|}shk(A2,a3)|}shk(A1,a3)
+	A1 -> A2: {|K7,N6,A1|}shk(A2,a3)
+	A2 -> A1: {|N5|}K7
+	A1 -> A2: {|pre(N5)|}K7
+
+Goals:
+	A1 authenticates A2 on N5
+	A2 authenticates A1 on N5
+	N5 secret between A1,A2
+	A2 *->* A1: N5
+	A1 authenticates a3 on K7
+	A2 authenticates a3 on K7
+",True,,,6,6,3,NO_ATTACK,1,A2 *->* A1: N5,"A1 receives N5 encrypted under K7 in message 6. The encryption guarantees that only a party knowing K7 could have sent it. The token in message 5 authenticates K7 to A2, and the inclusion of N6 ensures freshness. Hence A1 can reliably attribute N5 to A2.",NO_ATTACK,1,B *->* A: NxNB,"NO_ATTACK:A authenticates B on NxNB | NO_ATTACK:B authenticates A on NxNB | NO_ATTACK:NxNB secret between A,B | NO_ATTACK:B *->* A: NxNB | NO_ATTACK:A authenticates s on KxKAB | NO_ATTACK:B authenticates s on KxKAB"
+2026-05-12T09:36:17.531131,2026-05-12T09:33:52.687613,2026-05-12T09:36:17.531118,144.844,Amended_NSCK_AnB.AnBx,jg3ycd92mwnr AnB,DeepSeek,deepseek-reasoner,8371,"Protocol: jg3ycd92mwnr AnB
+
+Types:
+	Agent A1,A2,a3;
+	Number N4,N5,N6;
+	Symmetric_key K7;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+
+Knowledge:
+	A1: A1,A2,a3,pre,shk(A1,a3);
+	A2: A2,A1,a3,pre,shk(A2,a3);
+	a3: A1,A2,a3,shk(A1,a3),shk(A2,a3);
+	A1,a3 share shk(A1,a3);
+	A2,a3 share shk(A2,a3)
+
+Actions:
+	A1 -> A2: A1
+	A2 -> A1: {|A1,N6|}shk(A2,a3)
+	A1 -> a3: A1,A2,N4,{|A1,N6|}shk(A2,a3)
+	a3 -> A1: {|N4,A2,K7,{|K7,N6,A1|}shk(A2,a3)|}shk(A1,a3)
+	A1 -> A2: {|K7,N6,A1|}shk(A2,a3)
+	A2 -> A1: {|N5|}K7
+	A1 -> A2: {|pre(N5)|}K7
+
+Goals:
+	A1 authenticates A2 on N5
+	A2 authenticates A1 on N5
+	N5 secret between A1,A2
+	A2 *->* A1: N5
+	A1 authenticates a3 on K7
+	A2 authenticates a3 on K7
+",True,,,6,6,4,NO_ATTACK,1,A1 authenticates a3 on K7,"A1 receives {|N4,A2,K7,inner|}shk(A1,a3) from a3. The encryption with the long-term key shk(A1,a3) and the inclusion of A1’s nonce N4 prove that a3 generated K7 fresh for this session. No attack is possible without compromising shk(A1,a3).",NO_ATTACK,1,A authenticates s on KxKAB,"NO_ATTACK:A authenticates B on NxNB | NO_ATTACK:B authenticates A on NxNB | NO_ATTACK:NxNB secret between A,B | NO_ATTACK:B *->* A: NxNB | NO_ATTACK:A authenticates s on KxKAB | NO_ATTACK:B authenticates s on KxKAB"
+2026-05-12T09:36:17.531131,2026-05-12T09:33:52.687613,2026-05-12T09:36:17.531118,144.844,Amended_NSCK_AnB.AnBx,jg3ycd92mwnr AnB,DeepSeek,deepseek-reasoner,8371,"Protocol: jg3ycd92mwnr AnB
+
+Types:
+	Agent A1,A2,a3;
+	Number N4,N5,N6;
+	Symmetric_key K7;
+	Function [Number -> Number] pre;
+	Function [Agent,Agent ->* SymmetricKey] shk;
+
+Knowledge:
+	A1: A1,A2,a3,pre,shk(A1,a3);
+	A2: A2,A1,a3,pre,shk(A2,a3);
+	a3: A1,A2,a3,shk(A1,a3),shk(A2,a3);
+	A1,a3 share shk(A1,a3);
+	A2,a3 share shk(A2,a3)
+
+Actions:
+	A1 -> A2: A1
+	A2 -> A1: {|A1,N6|}shk(A2,a3)
+	A1 -> a3: A1,A2,N4,{|A1,N6|}shk(A2,a3)
+	a3 -> A1: {|N4,A2,K7,{|K7,N6,A1|}shk(A2,a3)|}shk(A1,a3)
+	A1 -> A2: {|K7,N6,A1|}shk(A2,a3)
+	A2 -> A1: {|N5|}K7
+	A1 -> A2: {|pre(N5)|}K7
+
+Goals:
+	A1 authenticates A2 on N5
+	A2 authenticates A1 on N5
+	N5 secret between A1,A2
+	A2 *->* A1: N5
+	A1 authenticates a3 on K7
+	A2 authenticates a3 on K7
+",True,,,6,6,5,NO_ATTACK,1,A2 authenticates a3 on K7,"A2 obtains K7 from the token {|K7,N6,A1|}shk(A2,a3) forwarded by A1. This token is encrypted with shk(A2,a3) and contains A2’s own nonce N6, so A2 can verify that a3 created it. Forwarding by A1 does not undermine authentication because A1 cannot alter the encrypted token.",NO_ATTACK,1,B authenticates s on KxKAB,"NO_ATTACK:A authenticates B on NxNB | NO_ATTACK:B authenticates A on NxNB | NO_ATTACK:NxNB secret between A,B | NO_ATTACK:B *->* A: NxNB | NO_ATTACK:A authenticates s on KxKAB | NO_ATTACK:B authenticates s on KxKAB"
+2026-05-12T09:37:52.768917,2026-05-12T09:36:19.533891,2026-05-12T09:37:52.768909,93.235,AnBx_BlindForwarding_AnB.AnBx,kr4q3grmu945 AnB,DeepSeek,deepseek-reasoner,4965,"Protocol: kr4q3grmu945 AnB
+
+Types:
+	Number N4;
+	Agent A2,A3,A1;		# Certified
+	Function [Agent,Agent ->* Number] ccn;
+	Number empty;
+	Function [Agent -> PublicKey] sk;
+	Function [Agent -> PublicKey] hk;
+	Function [Agent -> PublicKey] pk;
+	Function [Untyped -> Hash] hash;
+	Function [Untyped,HmacKey -> Hmac] hmac;
+
+Knowledge:
+	A2: A2,A3,A1,inv(pk(A2)),inv(hk(A2)),inv(sk(A2)),empty,pk,hk,sk,hash,hmac,ccn(A2,A1);
+	A3: A2,A3,A1,inv(pk(A3)),inv(hk(A3)),inv(sk(A3)),empty,pk,hk,sk,hash,hmac;
+	A1: A2,A3,A1,inv(pk(A1)),inv(hk(A1)),inv(sk(A1)),empty,pk,hk,sk,hash,hmac,ccn(A2,A1);
+	A2,A1 share ccn(A2,A1)
+
+Actions:
+	A2 -> A3: {{ccn(A2,A1),A1}inv(sk(A2))}pk(A1)
+	A3 -> A1: {{ccn(A2,A1),A1}inv(sk(A2))}pk(A1)
+
+Goals:
+	A1 weakly authenticates A2 on ccn(A2,A1)
+	ccn(A2,A1) secret between A2,A1
+",True,,,2,2,0,NO_ATTACK,1,"A1 weakly authenticates A2 on ccn(A2,A1)","The message includes a signature by A2 on the tuple (ccn(A2,A1), A1), which is encrypted to A1's public key. Only A1 can decrypt and verify the signature. Since the signature is unforgeable, the intruder cannot create a valid message without A2's private signing key. Replay of the ciphertext would cause A1 to accept a valid signature from a previous session, but 'weak authentication' explicitly allows non-injective agreement (no freshness required). Therefore, the goal holds against symbolic attacks.",NO_ATTACK,1,"A weakly authenticates C on ccn(C,A)","NO_ATTACK:A weakly authenticates C on ccn(C,A) | NO_ATTACK:ccn(C,A) secret between C,A"
+2026-05-12T09:37:52.768917,2026-05-12T09:36:19.533891,2026-05-12T09:37:52.768909,93.235,AnBx_BlindForwarding_AnB.AnBx,kr4q3grmu945 AnB,DeepSeek,deepseek-reasoner,4965,"Protocol: kr4q3grmu945 AnB
+
+Types:
+	Number N4;
+	Agent A2,A3,A1;		# Certified
+	Function [Agent,Agent ->* Number] ccn;
+	Number empty;
+	Function [Agent -> PublicKey] sk;
+	Function [Agent -> PublicKey] hk;
+	Function [Agent -> PublicKey] pk;
+	Function [Untyped -> Hash] hash;
+	Function [Untyped,HmacKey -> Hmac] hmac;
+
+Knowledge:
+	A2: A2,A3,A1,inv(pk(A2)),inv(hk(A2)),inv(sk(A2)),empty,pk,hk,sk,hash,hmac,ccn(A2,A1);
+	A3: A2,A3,A1,inv(pk(A3)),inv(hk(A3)),inv(sk(A3)),empty,pk,hk,sk,hash,hmac;
+	A1: A2,A3,A1,inv(pk(A1)),inv(hk(A1)),inv(sk(A1)),empty,pk,hk,sk,hash,hmac,ccn(A2,A1);
+	A2,A1 share ccn(A2,A1)
+
+Actions:
+	A2 -> A3: {{ccn(A2,A1),A1}inv(sk(A2))}pk(A1)
+	A3 -> A1: {{ccn(A2,A1),A1}inv(sk(A2))}pk(A1)
+
+Goals:
+	A1 weakly authenticates A2 on ccn(A2,A1)
+	ccn(A2,A1) secret between A2,A1
+",True,,,2,2,1,NO_ATTACK,1,"ccn(A2,A1) secret between A2,A1","The signed tuple is encrypted with A1's public key (pk(A1)). Only the holder of the corresponding private key (inv(pk(A1))) can decrypt and learn the value ccn(A2,A1). The intruder and A3 do not possess inv(pk(A1)). No protocol step reveals the secret through other means. Therefore, confidentiality is maintained.",NO_ATTACK,1,"ccn(C,A) secret between C,A","NO_ATTACK:A weakly authenticates C on ccn(C,A) | NO_ATTACK:ccn(C,A) secret between C,A"
+2026-05-12T09:38:20.680071,2026-05-12T09:37:54.771116,2026-05-12T09:38:20.680064,25.909,AnBx_Fresh_from_A_AnB.AnBx,B12w0lqgl5j10 AnB,DeepSeek,deepseek-reasoner,2192,"Protocol: B12w0lqgl5j10 AnB
+
+Types:
+	Agent A2;
+	Agent A1;		# Certified
+	Number N3;
+	Number empty;
+	Function [Agent -> PublicKey] sk;
+	Function [Agent -> PublicKey] hk;
+	Function [Agent -> PublicKey] pk;
+	Function [Untyped -> Hash] hash;
+	Function [Untyped,HmacKey -> Hmac] hmac;
+	SeqNumber SQNx1;
+
+Knowledge:
+	A1: A1,A2,inv(pk(A1)),inv(hk(A1)),inv(sk(A1)),empty,pk,hk,sk,hash,hmac;
+	A2: A1,A2,empty,pk,hk,sk,hash,hmac
+
+Actions:
+	A1 -> A2: {N3,SQNx1,A2}inv(sk(A1))
+
+Goals:
+	A2 authenticates A1 on N3
+",True,,,1,1,0,ATTACK,1,A2 authenticates A1 on N3,"The signed message {N3, SQNx1, A2}inv(sk(A1)) provides authenticity but no freshness mechanism. An intruder can replay a captured message to A2 at a later time; A2 verifies the signature and accepts N3 as originating from A1, even though A1 never intended that session. This violates the authentication goal because A2 believes A1 has sent N3 when the message is a replay.",NO_ATTACK,1,B authenticates A on Msg,NO_ATTACK:B authenticates A on Msg
