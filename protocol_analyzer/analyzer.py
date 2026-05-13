@@ -27,6 +27,8 @@ What is stored per result
 import os
 import glob
 import time
+import csv
+import re
 from datetime import datetime
 from typing import List, Optional
 from dotenv import load_dotenv
@@ -55,6 +57,96 @@ RESULTS_FOLDER      = "results"     # Output folder
 DELAY_BETWEEN_CALLS = 2             # Seconds between sequential API calls
 
 load_dotenv()
+
+
+def _safe_print(*args, sep: str = " ", end: str = "\n", flush: bool = False) -> None:
+    """
+    Print without crashing on Windows consoles that default to legacy encodings
+    (e.g. cp1252). Falls back to replacing unsupported characters.
+    """
+    import builtins
+    try:
+        builtins.print(*args, sep=sep, end=end, flush=flush)
+    except UnicodeEncodeError:
+        import sys
+
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        safe_args = []
+        for a in args:
+            s = str(a)
+            safe_args.append(s.encode(enc, errors="replace").decode(enc, errors="replace"))
+        builtins.print(*safe_args, sep=sep, end=end, flush=flush)
+
+
+# Make all prints in this module encoding-safe on Windows terminals.
+print = _safe_print  # type: ignore[assignment]
+
+
+def _load_manual_ofmc_csv(csv_path: str) -> dict:
+    """
+    Load manually-run OFMC results from a benchmark CSV and return:
+        { protocol_base: [ {attack, number_goals, goal, ofmc_exec_ms?}, ... ] }
+
+    The benchmark format stores one goal per row, and encodes goal index via
+    a numeric suffix in the `protocol` column, e.g.:
+        Yahalom_01, Yahalom_02, ...
+    """
+    mapping: dict = {}
+    try:
+        with open(csv_path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                proto = (row.get("protocol") or "").strip()
+                m = re.match(r"^(.*)_(\d+)$", proto)
+                if not m:
+                    continue
+                base = m.group(1).strip()
+                goal_idx = int(m.group(2)) - 1
+
+                attack = (row.get("attack") or "").strip()
+                if not attack:
+                    continue
+
+                n_goals_raw = row.get("number-goals") or row.get("number_goals") or ""
+                try:
+                    number_goals = int(str(n_goals_raw).strip() or "0")
+                except ValueError:
+                    number_goals = 0
+
+                goal_text = (row.get("goal") or "").strip()
+
+                entry = {
+                    "attack": attack.upper(),
+                    "number_goals": number_goals,
+                    "goal": goal_text,
+                }
+
+                exec_ms = (row.get("execution-time") or "").strip()
+                if exec_ms.isdigit():
+                    entry["ofmc_exec_ms"] = int(exec_ms)
+
+                mapping.setdefault(base, {})
+                # If duplicates exist for the same goal index, keep the first.
+                mapping[base].setdefault(goal_idx, entry)
+    except FileNotFoundError:
+        return {}
+
+    # Flatten the per-goal-index dict into a sorted list
+    flattened = {}
+    for base, by_idx in mapping.items():
+        flattened[base] = [by_idx[i] for i in sorted(by_idx.keys())]
+    return flattened
+
+
+def _protocol_base_from_filename(filename: str) -> str:
+    """
+    Map filenames like 'Yahalom_AnB.AnBx' -> 'Yahalom' to match benchmark CSV base.
+    """
+    stem = os.path.splitext(os.path.basename(filename))[0]
+    for suffix in ("_AnB", "_AnBx", "_anb", "_anbx"):
+        if stem.endswith(suffix):
+            return stem[: -len(suffix)]
+    return stem
 
 
 def get_providers() -> list:
@@ -131,6 +223,14 @@ def read_protocols(folder: str) -> List[dict]:
     for pattern in patterns:
         files.extend(glob.glob(pattern))
 
+    # Optional: load external OFMC ground truth (benchmark CSV) as fallback.
+    # This is used ONLY when the protocol file itself does not embed OFMC rows.
+    manual_csv = os.getenv(
+        "OFMC_MANUAL_RESULTS_CSV",
+        os.path.join(RESULTS_FOLDER, "Benchmark_manual_results-single-anb-typed-sessions_1-depth_0-2022-PCM.csv"),
+    )
+    manual_ofmc_map = _load_manual_ofmc_csv(manual_csv) if manual_csv else {}
+
     protocols = []
     for filepath in sorted(files):
         with open(filepath, "r", encoding="utf-8") as f:
@@ -143,6 +243,9 @@ def read_protocols(folder: str) -> List[dict]:
             name = os.path.splitext(os.path.basename(filepath))[0]
 
         ofmc_results = extract_ofmc_results(content)
+        if not ofmc_results and manual_ofmc_map:
+            base = _protocol_base_from_filename(filepath)
+            ofmc_results = manual_ofmc_map.get(base, [])
 
         protocols.append({
             "file":          os.path.basename(filepath),
@@ -156,8 +259,9 @@ def read_protocols(folder: str) -> List[dict]:
             f"{len(ofmc_results)} OFMC row(s)"
             if ofmc_results else "no OFMC rows detected"
         )
-        print(f"  📄 Loaded: {os.path.basename(filepath)}"
-              f"  [{name}]  ({ofmc_summary})")
+        _safe_print(
+            f"  📄 Loaded: {os.path.basename(filepath)}  [{name}]  ({ofmc_summary})"
+        )
 
     return protocols
 
